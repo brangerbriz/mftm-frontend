@@ -1,7 +1,7 @@
 class Block {
     constructor( config ){
-        this.id = config.id
-        this.speed = config.speed || 500
+        // this.id = config.id
+        this.speed = (config) ? config.speed || 500 : 500
 
         this.obj = new THREE.Object3D()
         this.position = this.obj.position
@@ -130,7 +130,7 @@ class Block {
         new TWEEN.Tween(this.position)
             .to({ x:pX, y:0, z:0 }, this.speed)
             .easing(TWEEN.Easing.Sinusoidal.Out)
-            .onUpdate(callback)
+            // .onUpdate(callback)
             .start()
 
         new TWEEN.Tween(this.uniforms.phase)
