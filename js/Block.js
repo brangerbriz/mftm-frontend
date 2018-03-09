@@ -1,10 +1,14 @@
 class Block {
     constructor( config ){
+        this.id = config.id
+        this.speed = config.speed || 500
+
         this.obj = new THREE.Object3D()
         this.position = this.obj.position
         this.rotation = this.obj.rotation
 
         this.uniforms = {
+            pOrig: { type: "f", value: 0.0 },
             phase: { type: "f", value: 0.0 }
         }
 
@@ -12,7 +16,6 @@ class Block {
             uniforms:this.uniforms,
             linewidth:2,
             vertexShader:this.vertexShader(),
-            // fragmentShader:document.querySelector('#frag').textContent
             fragmentShader:this.fragmentShader()
         })
 
@@ -25,6 +28,8 @@ class Block {
         this.obj.add( this.innerCube )
         this.obj.add( this.outerCube )
     }
+    // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.- geometry + shaders
+    // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
     buffLineCube( size ) {
         let h = size * 0.5
         let geometry = new THREE.BufferGeometry()
@@ -68,23 +73,74 @@ class Block {
             gl_FragColor = vec4( x, y, z, 1.0 );
         }`
     }
-    update(){
+    // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-. utils
+    // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+    norm(value, min, max){ return (value - min) / (max - min) }
+    lerp(norm, min, max){ return (max - min) * norm + min }
+    clamp(value, min, max){ return Math.max(min, Math.min(max, value)) }
+    map(value, sourceMin, sourceMax, destMin, destMax){
+        return this.lerp(
+            this.norm(value, sourceMin, sourceMax), destMin, destMax
+        )
+    }
+    log(){
+        console.log(this.position.x)
+    }
+    // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.- public
+    // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+    shimmer(){
+        let d = Math.sin(Date.now()*0.003)
+        let v = this.uniforms.phase.value
+        let o = this.uniforms.pOrig.value
+        this.uniforms.phase.value = this.map(d+v,-3,3,o-0.25,o+0.25)
+    }
+    growCube(){
+        new TWEEN.Tween(this.innerCube.scale)
+            .to({ x:1.25, y:1.25, z:1.25 }, this.speed)
+            .easing(TWEEN.Easing.Sinusoidal.Out)
+            .start()
+    }
+    shrinkCube(){
+        new TWEEN.Tween(this.innerCube.scale)
+            .to({ x:1, y:1, z:1 }, this.speed)
+            .easing(TWEEN.Easing.Sinusoidal.Out)
+            .start()
+    }
+    setPhase(pX){
+        // set the shading/phase color
+        // w/out running the rest of update()
+        pX = (pX) ? pX : this.position.x
+        new TWEEN.Tween(this.uniforms.phase)
+            .to({ type: "f", value: pX/6 }, this.speed)
+            .easing(TWEEN.Easing.Sinusoidal.Out)
+            .start()
+    }
+    update(callback){
         let pX = this.position.x + 1.5
         let rx = this.innerCube.rotation.x + Math.PI * 0.5
 
+        if( this.position.x == 0 ){
+            this.shrinkCube()
+            pX += 1.5
+        } else if( this.position.x == -3 ){
+            this.growCube()
+            pX += 1.5
+        }
+
         new TWEEN.Tween(this.position)
-            .to({ x:pX, y:0, z:0 }, 500)
+            .to({ x:pX, y:0, z:0 }, this.speed)
             .easing(TWEEN.Easing.Sinusoidal.Out)
+            .onUpdate(callback)
             .start()
 
         new TWEEN.Tween(this.uniforms.phase)
-            .to({ type: "f", value: pX/6 }, 500)
+            .to({ type: "f", value: pX/6 }, this.speed)
             .easing(TWEEN.Easing.Sinusoidal.Out)
             .start()
 
-        new TWEEN.Tween(this.innerCube.rotation)
-            .to({ x:rx, y:0, z:0 }, 500)
-            .easing(TWEEN.Easing.Sinusoidal.Out)
-            .start()
+        // new TWEEN.Tween(this.innerCube.rotation)
+        //     .to({ x:rx, y:0, z:0 }, this.speed)
+        //     .easing(TWEEN.Easing.Sinusoidal.Out)
+        //     .start()
     }
 }
