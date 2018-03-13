@@ -8,23 +8,16 @@
     </head>
     <body>
 
-        <svg id="leftArrow" viewBox="0 0 130 350" xmlns="http://www.w3.org/2000/svg" version="1.1">
-            <g stroke="#87BEF2" >
-                <line x1="10" y1="176" x2="125" y2="0" stroke-width="10" />
-                <line x1="125" y1="350" x2="10" y2="174" stroke-width="10" />
-            </g>
-        </svg>
-
-        <svg id="rightArrow" viewBox="0 0 130 350" xmlns="http://www.w3.org/2000/svg" version="1.1">
-            <g stroke="#87BEF2" >
-                <line x1="0" y1="0" x2="125" y2="176" stroke-width="10" />
-                <line x1="125" y1="174" x2="0" y2="350" stroke-width="10" />
-            </g>
-        </svg>
+        <div id="gui">
+            <nav-arrow :data-bc="blockchain" data-type="left"></nav-arrow>
+            <nav-arrow :data-bc="blockchain" data-type="right"></nav-arrow>
+        </div>
 
         <script src="js/libs/socket.io.js"></script>
         <script src="js/libs/tween.min.js"></script>
         <script src="js/libs/three.min.js"></script>
+        <script src="js/libs/vue.js"></script>
+        <script src="js/vue-components/nav-arrow.js"></script>
         <script src="js/Block.js"></script>
         <script src="js/Blockchain.js"></script>
         <script src="js/auth.js"></script>

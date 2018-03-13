@@ -1,4 +1,8 @@
+// _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/``````````\ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+// . . . . . . . . . . . . . . . . . . .    setup  . . . . . . . . . . . . . . .
+// -------------------------------------\,,,,,,,,,,/----------------------------
 
+let blockchain, gui
 const ipaddr = '192.168.1.252:8989'//'labs.brangerbriz.com:2222'
 const socket = io.connect(`https://${ipaddr}`)
 const scene = new THREE.Scene()
@@ -17,32 +21,11 @@ function draw() {
     renderer.render(scene, camera)
 }
 
-// _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/```````\ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-// . . . . . . . . . . . . . . . . . . .  arrows . . . . . . . . . . . . . . . .
-// -------------------------------------\,,,,,,,/-------------------------------
-
-function arrowClick(){
-    console.log(this.id)
-    this.style.opacity="0.5"
-    if(this.id=='rightArrow') blockchain.shiftNext()
-    else blockchain.shiftPrev()
-    setTimeout(()=>{ this.style.opacity="1" },blockchain.speed+100)
-    blockchain.getCurrentBlockInfo((data)=>{
-        console.log(data)
-    })
-}
-
-let rightArrow = document.querySelector('#rightArrow')
-    rightArrow.addEventListener('click',arrowClick)
-let leftArrow = document.querySelector('#leftArrow')
-    leftArrow.addEventListener('click',arrowClick)
-
 // _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/``````````\ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-// . . . . . . . . . . . . . . . . . . . blockchain . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . .   events  . . . . . . . . . . . . . . .
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
-let blockchain
-// setup scene (blockchain/camera) on block-count
+// setup scene (blockchain/gui/camera) on block-count
 socket.on('block-count', function(count) {
 
     blockchain = new Blockchain({
@@ -69,10 +52,17 @@ socket.on('block-count', function(count) {
         // data.tx[n].vout[n].amount
     })
 
-    camera.position.x = 3
-    camera.position.y = 3
-    camera.position.z = 3//8
+    gui = new Vue({
+        el: '#gui',
+        data: {
+            blockchain:blockchain
+        }
+    })
+
+    camera.position.x = camera.position.y = camera.position.z = 3
     camera.lookAt( blockchain.firstBlockXYZ() )
+    camera.position.z = 4.5
+    camera.position.y = 3.5
 
     draw()
 })
