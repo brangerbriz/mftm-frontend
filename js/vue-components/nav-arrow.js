@@ -43,11 +43,11 @@ Vue.component('nav-arrow', {
              @click="shift"
              version="1.1">
 
-            <g v-if="DataType=='left'" stroke="#87BEF2" >
+            <g v-if="DataType=='left'" stroke="#ffffff" >
                 <line x1="10" y1="176" x2="125" y2="0" stroke-width="10" />
                 <line x1="125" y1="350" x2="10" y2="174" stroke-width="10" />
             </g>
-            <g v-else stroke="#87BEF2" >
+            <g v-else stroke="#ffffff" >
                 <line x1="0" y1="0" x2="125" y2="176" stroke-width="10" />
                 <line x1="125" y1="174" x2="0" y2="350" stroke-width="10" />
             </g>
