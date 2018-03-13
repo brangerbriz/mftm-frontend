@@ -28,8 +28,10 @@ class Block {
         this.obj.add( this.innerCube )
         this.obj.add( this.outerCube )
     }
+
     // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.- geometry + shaders
     // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+
     buffLineCube( size ) {
         let h = size * 0.5
         let geometry = new THREE.BufferGeometry()
@@ -43,6 +45,7 @@ class Block {
             new THREE.Float32BufferAttribute(position,3) )
         return geometry
     }
+
     vertexShader(){
         return `
         varying vec3 vp;
@@ -54,6 +57,7 @@ class Block {
             vp = -mvPos.xyz;
         }`
     }
+
     fragmentShader(){
         return `
         #extension GL_OES_standard_derivatives : enable
@@ -73,6 +77,7 @@ class Block {
             gl_FragColor = vec4( x, y, z, 1.0 );
         }`
     }
+
     // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-. utils
     // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
     norm(value, min, max){ return (value - min) / (max - min) }
@@ -83,29 +88,32 @@ class Block {
             this.norm(value, sourceMin, sourceMax), destMin, destMax
         )
     }
-    log(){
-        console.log(this.position.x)
-    }
+    log(){ console.log(this.position.x) }
+
     // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.- public
     // .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+
     shimmer(){
         let d = Math.sin(Date.now()*0.003)
         let v = this.uniforms.phase.value
         let o = this.uniforms.pOrig.value
         this.uniforms.phase.value = this.map(d+v,-3,3,o-0.25,o+0.25)
     }
+
     growCube(){
         new TWEEN.Tween(this.innerCube.scale)
             .to({ x:1.25, y:1.25, z:1.25 }, this.speed)
-            .easing(TWEEN.Easing.Sinusoidal.Out)
+            .easing(TWEEN.Easing.Bounce.InOut)
             .start()
     }
+
     shrinkCube(){
         new TWEEN.Tween(this.innerCube.scale)
             .to({ x:1, y:1, z:1 }, this.speed)
-            .easing(TWEEN.Easing.Sinusoidal.Out)
+            .easing(TWEEN.Easing.Exponential.In)
             .start()
     }
+
     setPhase(pX){
         // set the shading/phase color
         // w/out running the rest of update()
@@ -115,16 +123,23 @@ class Block {
             .easing(TWEEN.Easing.Sinusoidal.Out)
             .start()
     }
-    update(callback){
-        let pX = this.position.x + 1.5
-        let rx = this.innerCube.rotation.x + Math.PI * 0.5
 
-        if( this.position.x == 0 ){
-            this.shrinkCube()
-            pX += 1.5
-        } else if( this.position.x == -3 ){
-            this.growCube()
-            pX += 1.5
+    update(dir){
+        let pX = this.position.x + (1.5*dir)
+        let rz = this.innerCube.rotation.z + Math.PI * (0.5*-dir)
+
+        if( dir > 0 ){ // fwd
+            if( this.position.x == 0 ){
+                this.shrinkCube(); pX += 1.5
+            } else if( this.position.x == -3 ){
+                this.growCube(); pX += 1.5
+            }
+        } else { // bwd
+            if( this.position.x == 3 ){
+                this.growCube(); pX -= 1.5
+            } else if( this.position.x == 0 ){
+                this.shrinkCube(); pX -= 1.5
+            }
         }
 
         new TWEEN.Tween(this.position)
@@ -138,9 +153,12 @@ class Block {
             .easing(TWEEN.Easing.Sinusoidal.Out)
             .start()
 
-        // new TWEEN.Tween(this.innerCube.rotation)
-        //     .to({ x:rx, y:0, z:0 }, this.speed)
-        //     .easing(TWEEN.Easing.Sinusoidal.Out)
-        //     .start()
+        if( pX !== 0 ){
+            new TWEEN.Tween(this.innerCube.rotation)
+                .to({ x:0, y:0, z:rz }, this.speed)
+                .easing(TWEEN.Easing.Sinusoidal.Out)
+                .start()
+        }
     }
+
 }

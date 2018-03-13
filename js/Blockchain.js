@@ -5,15 +5,21 @@ class Blockchain {
             throw new Error('Blockchain expecting getAuthHeaders function')
 
         this.getAuthHeaders = config.getAuthHeaders
+        this.height = config.height
+        this.scene = config.scene
+        this.speed = config.speed || 500
         this.serverIP = config.ip || 'localhost:8989'
-        this.max = config.max || 10
+        this.renderTotal = 9
+
         this.shiftLock = false
         this.blocks = []
+        this.index = 0
     }
-    init( scene ){
-        for (let i = 0; i < this.max; i++) {
 
-            let block = new Block()
+    init(){
+        for (let i = 0; i < this.renderTotal; i++) {
+
+            let block = new Block({speed:this.speed})
                 block.position.x = -1.5*i
 
             if(i>0) block.position.x -= 1.5
@@ -21,55 +27,74 @@ class Blockchain {
 
             block.setPhase()
             this.blocks.push( block )
-            scene.add( block.obj )
+            this.scene.add( block.obj )
         }
     }
-    add( block ){
-        if( this.blocks.length < this.max ){
-            this.blocks.push( block )
-        } else {
-            throw new Error('blockchain maxed out')
-        }
-    }
-    remove(id){
-        this.blocks = this.blocks.filter(b=>b.id!==id)
-    }
+
     firstBlockXYZ(){
         return this.blocks[0].position
     }
-    firstBlockX(){
-        return this.blocks[0].position.x
-    }
-    lastBlockX(){
-        return this.blocks[this.blocks.length-1].position.x
-    }
-    getBlockInfo(index,callback){
+
+    getCurrentBlockInfo(callback){
         fetch(
-            `https://${this.serverIP}/api/block?index=${index}`,
+            `https://${this.serverIP}/api/block?index=${this.index}`,
             { headers: this.getAuthHeaders() })
         .then(res => res.json())
         .then(data => { callback(data) })
         .catch(err=>{ console.error(err) })
     }
-    shiftNext( scene, block ){
+
+    _shift( dir, callback ){
         if( !this.shiftLock ){
-            this.shiftLock = true
-            this.blocks.forEach(b=>b.update())
-            setTimeout(()=>{
-                // if first block is off screen
-                if( this.blocks[0].position.x >= 9 ){
-                    // remove block from front of blockchain && from scene
-                    let oldBlock = this.blocks.shift()
-                    scene.remove( oldBlock.obj )
-                    // add block to blockchain && scene
-                    let newBlock = new Block()
-                        newBlock.position.x = -9
-                        newBlock.setPhase()
-                    this.blocks.push( newBlock )
-                    scene.add( newBlock.obj )
+            // only shift next if we're not already at the end
+            // only shift back if we're not already at the beginning
+            if( (dir > 0 && this.index !== this.height) ||
+                (dir < 0 && this.index !== 0 ) ){
+                    this.shiftLock = true
+                    this.index += dir
+                    this.blocks.forEach(b=>b.update(dir))
+                    setTimeout( callback, this.blocks[0].speed+100 )
                 }
-                this.shiftLock = false
-            },this.blocks[0].speed+50)
         }
     }
+
+    shiftNext(){
+        this._shift( +1,()=>{
+            // if first block is off screen
+            if( this.blocks[0].position.x > 7.5
+                && this.index < this.height-3 ){
+                // remove block from front of blockchain && from scene
+                let oldBlock = this.blocks.shift()
+                this.scene.remove( oldBlock.obj )
+                // add block to blockchain && scene
+                let newBlock = new Block({speed:this.speed})
+                    newBlock.position.x = -7.5
+                    newBlock.setPhase()
+                this.blocks.push( newBlock )
+                this.scene.add( newBlock.obj )
+            }
+            this.shiftLock = false
+        })
+    }
+
+    shiftPrev(){
+        this._shift( -1, ()=>{
+            // if last block is off screen
+            if( this.blocks[this.blocks.length-1].position.x < -7.5
+                && this.index > 3 ){
+                // remove block from back of blockchain && from scene
+                let oldBlock = this.blocks.pop()
+                this.scene.remove( oldBlock.obj )
+                // add block to blockchain && scene
+                let newBlock = new Block({speed:this.speed})
+                    newBlock.position.x = 7.5
+                    newBlock.setPhase()
+                this.blocks.unshift( newBlock )
+                this.scene.add( newBlock.obj )
+            }
+            this.shiftLock = false
+        })
+    }
+
+
 }
