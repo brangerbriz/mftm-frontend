@@ -73,7 +73,7 @@ Vue.component('block-info', {
         getDate:function(time){
             let date = new Date(time*1000)
             let Y = date.getFullYear()
-            let M = date.getMonth()
+            let M = date.getMonth()+1
             let D = date.getDate()
             let h = date.getHours()
             let m = "0" + date.getMinutes()
@@ -81,10 +81,7 @@ Vue.component('block-info', {
             return `${D}/${M}/${Y} ${h}:${m.substr(-2)}:${s.substr(-2)}`
         },
         show:function(block){
-            if(block) {
-                console.log(block)
-                this.block = block
-            }
+            if(block) this.block = block
             this.anim+=0.2
             if(this.anim<1) setTimeout(this.show,50)
             else if(this.anim>1) this.anim=1
