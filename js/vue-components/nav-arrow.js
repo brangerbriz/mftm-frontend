@@ -24,15 +24,34 @@ Vue.component('nav-arrow', {
             for(let p in props) str+=`${p}:${props[p]};`
             return str
         },
+        after:function(times,func){
+            return function() {
+                if (--times < 1) {
+                    return func.apply(this, arguments)
+                }
+            }
+        },
         shift:function(){
+            let block
             let blockchain = this.DataBc
+
             this.opacity="0.5"
+            gui.$refs.nfo.hide()
+
+            const showData = this.after(2,()=>{
+                this.opacity="1"
+                gui.$refs.nfo.show(block)
+            })
+
             if(this.DataType=="left") blockchain.shiftPrev()
             else blockchain.shiftNext()
-            setTimeout(()=>{ this.opacity="1" },blockchain.speed+100)
+
             blockchain.getCurrentBlockInfo((data)=>{
-                console.log(data)
+                block=data
+                showData()
             })
+
+            setTimeout(showData,blockchain.speed+100)
         }
     },
     template:`<div>
@@ -40,8 +59,7 @@ Vue.component('nav-arrow', {
         <svg viewBox="0 0 130 350"
              xmlns="http://www.w3.org/2000/svg"
              :style="css()"
-             @click="shift"
-             version="1.1">
+             @click="shift">
 
             <g v-if="DataType=='left'" stroke="#ffffff" >
                 <line x1="10" y1="176" x2="125" y2="0" stroke-width="10" />

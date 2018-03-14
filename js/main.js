@@ -38,31 +38,25 @@ socket.on('block-count', function(count) {
 
     blockchain.init( scene )
 
-    blockchain.getCurrentBlockInfo((data)=>{
-        console.log(data)
-        // data.hash
-        // data.height
-        // data.time
-        // ....coinbase......
-        // data.tx[0].hash
-        // data.tx[0].vin[0].coinbase
-        // data.tx[0].vout[n].amount
-        // ....the rest......
-        // data.tx[n].hash
-        // data.tx[n].vout[n].amount
-    })
-
-    gui = new Vue({
-        el: '#gui',
-        data: {
-            blockchain:blockchain
-        }
-    })
-
     camera.position.x = camera.position.y = camera.position.z = 3
     camera.lookAt( blockchain.firstBlockXYZ() )
     camera.position.z = 4.5
     camera.position.y = 3.5
+
+    function getFirstBlockInfo(){
+        blockchain.getCurrentBlockInfo((data)=>{
+            gui.$refs.nfo.show(data)
+        })
+    }
+
+    gui = new Vue({
+        el: '#gui',
+        data: {
+            blockchain:blockchain,
+            camera:camera
+        },
+        mounted:getFirstBlockInfo
+    })
 
     draw()
 })
