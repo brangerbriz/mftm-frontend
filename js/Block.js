@@ -103,7 +103,7 @@ class Block {
     growCube(){
         new TWEEN.Tween(this.innerCube.scale)
             .to({ x:1.25, y:1.25, z:1.25 }, this.speed)
-            .easing(TWEEN.Easing.Bounce.InOut)
+            .easing(TWEEN.Easing.Exponential.In)
             .start()
     }
 
