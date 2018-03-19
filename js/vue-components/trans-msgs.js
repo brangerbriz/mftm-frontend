@@ -196,7 +196,7 @@ Vue.component('trans-msgs', {
                     <span style="float:right;"> {{ shortBTC(t) }} BTC </span>
                     <div v-if="messages && messages.hasOwnProperty(t.hash)"
                          :style="messageCSS">
-                         {{ messages[t.hash].data }}
+                         {{ formatMessage(messages[t.hash].data) }}
                     </div>
                 </div>
 
