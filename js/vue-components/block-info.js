@@ -8,8 +8,8 @@ Vue.component('block-info', {
             time:0,
             tx:[{
                 hash:'x',
-                vin:[{coinbase:0,amount:0}],
-                vout:[{amount:0}]
+                vin:[{coinbase:'x'}],
+                vout:[{value:0}]
             }]
         }
     }},
@@ -59,6 +59,10 @@ Vue.component('block-info', {
                 height:'200px'
             }
             return this.printCSS(props)
+        },
+        hashURL:function(){
+            let b = 'https://blockchain.info/block-index/1654382/'
+            return `${b}${this.block.hash}`
         }
     },
     methods:{
@@ -112,7 +116,11 @@ Vue.component('block-info', {
             <div><b>block number:</b> {{block.height}}</div>
             <div style="height:15px"></div>
             <div><b>mined on:</b> {{getDate(block.time)}}</div>
-            <div style="max-width:283px;word-wrap:break-word;"><b>hash/id:</b><span style="padding:0px 5px"></span>{{block.hash}}</div>
+            <a :href="hashURL" target="_blank">
+                <div style="max-width:283px;word-wrap:break-word;">
+                    <b>hash/id:</b><span style="padding:0px 5px"></span>{{block.hash}}
+                </div>
+            </a>
         </section>
     </div>`
 })

@@ -14,6 +14,9 @@ body,html {
     margin:0; padding:0;
     font-family: 'Source_Code';
     color:#fff;
+    overflow-y: hidden;
 }
 
 b { font-weight: bold; }
+
+a { color:#fff; text-decoration: none; }

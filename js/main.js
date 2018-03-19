@@ -25,12 +25,13 @@ function draw() {
 // . . . . . . . . . . . . . . . . . . .   events  . . . . . . . . . . . . . . .
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
-// setup scene (blockchain/gui/camera) on block-count
-socket.on('block-count', function(count) {
+// setup scene (blockchain/gui/camera) on blockchain-data
+socket.on('blockchain-data', function(data) {
 
     blockchain = new Blockchain({
         speed: 500, // animation transition speed in ms
-        height: count,
+        height: data.height,
+        messageIndexes: data.blocklist,
         scene: scene,
         ip: ipaddr,
         getAuthHeaders: getAuthHeaders
@@ -44,8 +45,11 @@ socket.on('block-count', function(count) {
     camera.position.y = 3.5
 
     function getFirstBlockInfo(){
-        blockchain.getCurrentBlockInfo((data)=>{
-            gui.$refs.nfo.show(data)
+        blockchain.getCurrentBlockInfo((block)=>{
+            gui.$refs.nfo.show(block)
+            blockchain.getCurrentBlockMessages((messages)=>{
+                gui.$refs.tx.show(block,messages)
+            })
         })
     }
 
@@ -55,7 +59,7 @@ socket.on('block-count', function(count) {
             blockchain:blockchain,
             camera:camera
         },
-        mounted:getFirstBlockInfo
+        created:getFirstBlockInfo
     })
 
     draw()
@@ -63,6 +67,29 @@ socket.on('block-count', function(count) {
 
 // this will be received when a node receives a new block
 socket.on('received-block', function(data) {
-    // TODO somekind of visual queue/event for a new block
+    // TODO somekind of visual queue/event for a new block (github issue#3)
     blockchain.height = data.height
 })
+
+// for debugging
+function logBlock(idx){
+    if(typeof idx=="undefined")
+        blockchain.getCurrentBlockInfo(d=>console.log(d))
+    else fetch(
+        `https://${ipaddr}/api/block?index=${idx}`,
+        { headers: getAuthHeaders() })
+    .then(res => res.json())
+    .then(data => { console.log(data) })
+    .catch(err=>{ console.error(err) })
+}
+
+function logMessages(idx){
+    if(typeof idx=="undefined")
+        blockchain.getCurrentBlockMessages(m=>console.log(m))
+    else fetch(
+        `https://${ipaddr}/api/block/messages?index=${idx}`,
+        { headers: getAuthHeaders() })
+    .then(res => res.json())
+    .then(data => { console.log(data) })
+    .catch(err=>{ console.error(err) })
+}

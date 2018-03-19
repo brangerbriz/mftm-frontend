@@ -12,6 +12,7 @@
             <nav-arrow :data-bc="blockchain" data-type="left"></nav-arrow>
             <nav-arrow :data-bc="blockchain" data-type="right"></nav-arrow>
             <block-info :data-bc="blockchain" :data-cam="camera" ref="nfo"></block-info>
+            <trans-msgs :data-bc="blockchain" ref="tx"></trans-msgs>
         </div>
 
         <script src="js/libs/socket.io.js"></script>
@@ -20,6 +21,7 @@
         <script src="js/libs/vue.js"></script>
         <script src="js/vue-components/nav-arrow.js"></script>
         <script src="js/vue-components/block-info.js"></script>
+        <script src="js/vue-components/trans-msgs.js"></script>
         <script src="js/Block.js"></script>
         <script src="js/Blockchain.js"></script>
         <script src="js/auth.js"></script>

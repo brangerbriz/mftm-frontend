@@ -32,15 +32,17 @@ Vue.component('nav-arrow', {
             }
         },
         shift:function(){
-            let block
+            let block, messages
             let blockchain = this.DataBc
 
             this.opacity="0.5"
             gui.$refs.nfo.hide()
+            gui.$refs.tx.hide()
 
-            const showData = this.after(2,()=>{
+            const showData = this.after(3,()=>{
                 this.opacity="1"
                 gui.$refs.nfo.show(block)
+                gui.$refs.tx.show(block,messages)
             })
 
             if(this.DataType=="left") blockchain.shiftPrev()
@@ -48,6 +50,11 @@ Vue.component('nav-arrow', {
 
             blockchain.getCurrentBlockInfo((data)=>{
                 block=data
+                showData()
+            })
+
+            blockchain.getCurrentBlockMessages((data)=>{
+                messages=data
                 showData()
             })
 

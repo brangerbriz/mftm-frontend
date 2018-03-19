@@ -4,9 +4,11 @@ class Blockchain {
         if( !config.getAuthHeaders )
             throw new Error('Blockchain expecting getAuthHeaders function')
 
+        this.scene = config.scene
         this.getAuthHeaders = config.getAuthHeaders
         this.height = config.height
-        this.scene = config.scene
+        this.messageIndexes = config.messageIndexes
+        // messageIndexes = {all:[], sfw:[], valid:[], bookmarked:[]}
         this.speed = config.speed || 500
         this.serverIP = config.ip || 'localhost:8989'
         this.renderTotal = 9
@@ -42,6 +44,20 @@ class Blockchain {
         .then(res => res.json())
         .then(data => { callback(data) })
         .catch(err=>{ console.error(err) })
+    }
+
+    getCurrentBlockMessages(callback){
+        // TODO make these variable ( github issue#2 )
+        if( this.messageIndexes.all.indexOf(this.index) >=0 ){
+            fetch(
+                `https://${this.serverIP}/api/block/messages?index=${this.index}`,
+                { headers: this.getAuthHeaders() })
+                .then(res => res.json())
+                .then(data => { callback(data) })
+                .catch(err=>{ console.error(err) })
+        } else {
+            callback(null)
+        }
     }
 
     _shift( dir, callback ){
