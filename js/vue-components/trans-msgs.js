@@ -118,6 +118,14 @@ Vue.component('trans-msgs', {
             let str = JSON.stringify(msg)
             return str.substring(1, str.length-1)
         },
+        isCoinbase:function(t,i){
+            if(this.abbreviate){
+                let idMatch = this.block.tx[0].txid == t.txid
+                return (i==0 && idMatch)
+            } else {
+                return (i==0)
+            }
+        },
         showHideMessage:function(){
             let diff = this.block.tx.length - this.abbrTx.length
             let sMsg = `show the ${diff} hidden transaction${(diff==1)?'':'s'}`
@@ -176,7 +184,7 @@ Vue.component('trans-msgs', {
                         <a :href="hashURL(t.hash)" target="_blank">
                             {{ shortHash(t.hash) }}
                         </a>
-                        <span v-if="i==0">(coinbase)</span>
+                        <span v-if="isCoinbase(t,i)">(coinbase)</span>
                         <span style="float:right;"> {{ shortBTC(t) }} BTC </span>
                         <div :style="messageCSS">
                             {{ formatMessage(messages[t.hash].data) }}
@@ -192,7 +200,7 @@ Vue.component('trans-msgs', {
                     <a :href="hashURL(t.hash)" target="_blank">
                         {{ shortHash(t.hash) }}
                     </a>
-                    <span v-if="i==0">(coinbase)</span>
+                    <span v-if="isCoinbase(t,i)">(coinbase)</span>
                     <span style="float:right;"> {{ shortBTC(t) }} BTC </span>
                     <div v-if="messages && messages.hasOwnProperty(t.hash)"
                          :style="messageCSS">
