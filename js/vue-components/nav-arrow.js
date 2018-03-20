@@ -20,9 +20,7 @@ Vue.component('nav-arrow', {
             if(this.DataType=='left') props.left="50px"
             else if(this.DataType=='right') props.right="50px"
 
-            let str = ``
-            for(let p in props) str+=`${p}:${props[p]};`
-            return str
+            return props
         },
         after:function(times,func){
             return function() {

@@ -29,7 +29,7 @@ Vue.component('trans-msgs', {
     },
     computed:{
         secCSS:function(){
-            let props = {
+            return {
                 opacity:this.anim,
                 position:'absolute',
                 'z-index':10,
@@ -42,10 +42,9 @@ Vue.component('trans-msgs', {
                 padding:'50px 10px 10px 10px',
                 overflow: 'scroll'
             }
-            return this.printCSS(props)
         },
         headerCSS:function(){
-            let props = {
+            return {
                 position:'fixed',
                 background:'#000',
                 width:'755px',
@@ -53,20 +52,18 @@ Vue.component('trans-msgs', {
                 padding:'10px',
                 'border-bottom':'2px solid #fff'
             }
-            return this.printCSS(props)
         },
         messageCSS:function(){
-            let props = {
+            return {
                 background: 'rgba(100,100,100,0.5)',
                 color: '#5ADDFF',
                 padding: '8px',
                 margin: '4px 0px 2px 0px'
             }
-            return this.printCSS(props)
             // TODO don't wordwrap 'ascii art' or 'code'
         },
         abbrToggleCSS:function(){
-            let props = {
+            return {
                 float:'right',
                 background: '#ffffff',
                 color:'#000000',
@@ -74,7 +71,6 @@ Vue.component('trans-msgs', {
                 cursor:'pointer',
                 'user-select':'none'
             }
-            return this.printCSS(props)
         }
     },
     methods:{
@@ -90,11 +86,6 @@ Vue.component('trans-msgs', {
         },
         hashURL:function(hash){
             return `https://blockchain.info/tx/${hash}`
-        },
-        printCSS:function(props){
-            let str = ``
-            for(let p in props) str+=`${p}:${props[p]};`
-            return str
         },
         txLazyLoad:function(e){
             let l = this.lazyTx.length

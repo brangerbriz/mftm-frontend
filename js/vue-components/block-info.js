@@ -30,27 +30,26 @@ Vue.component('block-info', {
     },
     computed:{
         circleCSS:function(){
-            let props = {
+            return {
                 position:'absolute',
                 'z-index':10,
                 left:this.coords.x+170+"px",
                 top:this.coords.y-117+"px",
                 height:'30px'
             }
-            return this.printCSS(props)
+
         },
         lineCSS:function(){
-            let props = {
+            return {
                 position:'absolute',
                 'z-index':10,
                 left:this.coords.x+183+"px",
                 top:this.coords.y-301+"px",
                 height:'200px'
             }
-            return this.printCSS(props)
         },
         textCSS:function(){
-            let props = {
+            return {
                 opacity:this.anim,
                 position:'absolute',
                 'z-index':10,
@@ -58,7 +57,6 @@ Vue.component('block-info', {
                 top:this.coords.y-295+"px",
                 height:'200px'
             }
-            return this.printCSS(props)
         },
         hashURL:function(){
             let b = 'https://blockchain.info/block-index/1654382/'
@@ -66,11 +64,6 @@ Vue.component('block-info', {
         }
     },
     methods:{
-        printCSS:function(props){
-            let str = ``
-            for(let p in props) str+=`${p}:${props[p]};`
-            return str
-        },
         lineVB:function(){
             return `0 0 ${150*this.anim} 50`
         },
