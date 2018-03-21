@@ -27,7 +27,6 @@ function draw() {
 
 // setup scene (blockchain/gui/camera) on blockchain-data
 socket.on('blockchain-data', function(data) {
-
     blockchain = new Blockchain({
         speed: 500, // animation transition speed in ms
         height: data.height,
@@ -69,6 +68,14 @@ socket.on('blockchain-data', function(data) {
 socket.on('received-block', function(data) {
     // TODO somekind of visual queue/event for a new block (github issue#3)
     blockchain.height = data.height
+})
+
+// this will be fired every 10 seconds
+socket.on('peer-info', function(data) {
+    if(typeof gui !=="undefined"){
+        let addrs = data.map(p=>p.addr)
+        gui.$refs.cntrl.peers = addrs
+    }
 })
 
 // for debugging
