@@ -31,6 +31,7 @@ socket.on('blockchain-data', function(data) {
         speed: 500, // animation transition speed in ms
         height: data.height,
         messageIndexes: data.blocklist,
+        sfw: true,
         scene: scene,
         ip: ipaddr,
         getAuthHeaders: getAuthHeaders

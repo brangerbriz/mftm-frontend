@@ -13,7 +13,7 @@ class Blockchain {
         // messageIndexes = {all:[], valid:[], sfw:[], bookmarked:[]}
         this.filteredIndexes = [] // if cntrl has filters set
         this.filtering = false // if cntrl has tags &&/or filter
-        this.sfwOnly = true // TODO expose as prop to make this optional
+        this.sfwOnly = config.sfw || false
         this.validOnly = false // if cntrl has valid filter on
 
         this.speed = config.speed || 500
