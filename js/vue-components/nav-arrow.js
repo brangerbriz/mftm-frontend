@@ -1,19 +1,29 @@
 Vue.component('nav-arrow', {
     data:function(){return {
-        opacity:1
+        opacity:1,
+        top:0
     }},
     props:{
         DataType:String,
-        DataBc:Object
+        DataBc:Object,
+        DataCam:Object
+    },
+    mounted:function(){
+        let b = this.DataBc.blocks[0].position
+        let p = new THREE.Vector3( b.x, b.y, b.z )
+        // via: https://stackoverflow.com/a/27448966/1104148
+        let vec = p.project(this.DataCam)
+        this.top =  -(vec.y - 1) / 2 * innerHeight - (innerWidth/11)
     },
     methods:{
         css:function(){
+
             let props = {
                 opacity:this.opacity,
                 cursor:'pointer',
                 position:'absolute',
                 'z-index':10,
-                top:'25%',
+                top:this.top+"px",
                 height:'150px'
             }
 

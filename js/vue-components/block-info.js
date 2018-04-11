@@ -23,18 +23,23 @@ Vue.component('block-info', {
 
         // via: https://stackoverflow.com/a/27448966/1104148
         let vec = p.project(this.DataCam)
-            vec.x = (vec.x + 1) / 2 * innerWidth
-            vec.y = -(vec.y - 1) / 2 * innerHeight
+            vec.x = (vec.x + 1) / 2 * innerWidth + (innerHeight/3.95)
+            vec.y = -(vec.y - 1) / 2 * innerHeight - (innerWidth/11)
 
-        this.coords = vec
+        this.coords = {
+            x: vec.x,
+            y: vec.y
+        }
     },
     computed:{
         circleCSS:function(){
             return {
                 position:'absolute',
                 'z-index':10,
-                left:this.coords.x+170+"px",
-                top:this.coords.y-117+"px",
+                // left:this.coords.x+170+"px",
+                // top:this.coords.y-117+"px",
+                left:this.coords.x+"px",
+                top:this.coords.y+"px",
                 height:'30px'
             }
 
@@ -43,8 +48,8 @@ Vue.component('block-info', {
             return {
                 position:'absolute',
                 'z-index':10,
-                left:this.coords.x+183+"px",
-                top:this.coords.y-301+"px",
+                left:this.coords.x+13+"px",
+                top:this.coords.y-184+"px",
                 height:'200px'
             }
         },
@@ -53,8 +58,8 @@ Vue.component('block-info', {
                 opacity:this.anim,
                 position:'absolute',
                 'z-index':10,
-                left:this.coords.x+500+"px",
-                top:this.coords.y-295+"px",
+                left:this.coords.x+330+"px",
+                top:this.coords.y-178+"px",
                 height:'200px'
             }
         },

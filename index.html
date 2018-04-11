@@ -9,8 +9,10 @@
     <body>
 
         <div id="gui">
-            <nav-arrow :data-bc="blockchain" data-type="left"></nav-arrow>
-            <nav-arrow :data-bc="blockchain" data-type="right"></nav-arrow>
+            <nav-arrow :data-bc="blockchain" :data-cam="camera"
+                        data-type="left"></nav-arrow>
+            <nav-arrow :data-bc="blockchain" :data-cam="camera"
+                        data-type="right"></nav-arrow>
             <block-info :data-bc="blockchain" :data-cam="camera" ref="nfo"></block-info>
             <trans-msgs :data-bc="blockchain" ref="tx"></trans-msgs>
             <control-area :data-bc="blockchain" ref="cntrl"></control-area>
