@@ -171,8 +171,39 @@ class Blockchain {
         }
     }
 
-    seekTo(){
-        // TODO for bookmarks && timeline scrubbing
+    seekTo(x,callback){
+        let idx = Math.floor(this.height*x)
+        this.index = idx
+        let obj = { idx:this.index }
+
+        let f = this.filtering
+        let v = this.validOnly
+        if( !f && !v ){
+            callback( idx )
+        } else {
+            let arr = []
+            if( f ){
+                arr = this.filteredIndexes
+                if(v) arr=arr.filter(i=>
+                                this.messageIdxsMap.valid.hasOwnProperty(i))
+            } else if( v ){
+                arr = this.messageIndexes.valid
+            }
+            arr = arr.sort()
+            let vals = this._getClosestValues(arr,idx)
+            if( typeof vals[0]=="undefined" ){
+                callback( vals[1] )
+            } else if( typeof vals[1]=="undefined" ){
+                callback( vals[0] )
+            } else {
+                let dists = [Math.abs(idx-vals[0]),Math.abs(idx-vals[1])]
+                if( dists[0] > dists[1] ){
+                    callback( vals[1] )
+                } else {
+                    callback( vals[0] )
+                }
+            }
+        }
     }
 
     shiftNext(){

@@ -271,6 +271,64 @@ Vue.component('control-area', {
                 return 'showing all UTF8 data in blockchain'
             }
         },
+
+        after:function(times,func){
+            return function() {
+                if (--times < 1) {
+                    return func.apply(this, arguments)
+                }
+            }
+        },
+        clickBookmark:function(e){
+            console.log(e)
+        },
+        clickTL:function(e){
+            let blockIdx = e.layerX / this.svgD().w
+            let block, messages
+            let blockchain = this.DataBc
+            let filters = {
+                valid:blockchain.validOnly,
+                searchTerm:gui.$refs.cntrl.searchFilter,
+                tags:gui.$refs.cntrl.tags
+            }
+
+            gui.$refs.leftArrow.opacity="0.5"
+            gui.$refs.rightArrow.opacity="0.5"
+            gui.$refs.nfo.hide()
+            gui.$refs.tx.hide()
+
+            const showData = this.after(4,()=>{
+                gui.$refs.leftArrow.opacity="1"
+                gui.$refs.rightArrow.opacity="1"
+                gui.$refs.nfo.show(block)
+                gui.$refs.tx.show(block,messages,filters)
+            })
+
+            blockchain.seekTo( blockIdx,(target)=>{
+                new TWEEN.Tween(blockchain)
+                    .to({ index:target }, 250)
+                    .easing(TWEEN.Easing.Sinusoidal.Out)
+                    .onComplete(()=>{
+
+                        showData()
+
+                        blockchain.getCurrentBlockInfo((data)=>{
+                            block=data
+                            showData()
+                        })
+
+                        blockchain.getCurrentBlockMessages((data)=>{
+                            messages=data
+                            showData()
+                        })
+
+                    })
+                    .start()
+            })
+
+            setTimeout(showData,blockchain.speed+100)
+        },
+
         createFilteredValues:function(){
             let b = this.DataBc
             let f = b.filtering
@@ -384,7 +442,7 @@ Vue.component('control-area', {
                     </div>
                 </div>
 
-                <svg xmlns="http://www.w3.org/2000/svg"
+                <svg xmlns="http://www.w3.org/2000/svg" @click="clickTL($event)"
                      :view-box="viewbox" :style="svgCSS">
                     <g>
                         <path :style="pathCSS" :d="pathStr"></path>
