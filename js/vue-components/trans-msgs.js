@@ -128,6 +128,13 @@ Vue.component('trans-msgs', {
                 return a
             }
         },
+        needsPre:function(m){
+            return (
+                m.tags.includes('ascii-art') ||
+                m.tags.includes('code') ||
+                m.format
+            )
+        },
         isCoinbase:function(t,i){
             if(this.abbreviate){
                 let idMatch = this.block.tx[0].txid == t.txid
@@ -218,7 +225,7 @@ Vue.component('trans-msgs', {
                             [REMOVED: NOT SAFE FOR WORK]
                         </div>
                         <div v-else :style="messageCSS">
-<pre v-if="messages[t.hash].tags.indexOf('ascii-art')>=0 || messages[t.hash].format">
+<pre v-if="needsPre(messages[t.hash])">
 {{ messages[t.hash].data }}
 </pre>
                             <span v-else>{{messages[t.hash].data}}</span>
@@ -244,7 +251,7 @@ Vue.component('trans-msgs', {
                         <span v-if="DataBc.sfwOnly && messages[t.hash].nsfw">
                             [REMOVED: NOT SAFE FOR WORK]
                         </span>
-<pre v-else-if="messages[t.hash].tags.indexOf('ascii-art')>=0 || messages[t.hash].format">
+<pre v-else-if="needsPre(messages[t.hash])">
 {{ messages[t.hash].data }}
 </pre>
                         <span v-else>{{messages[t.hash].data}}</span>
