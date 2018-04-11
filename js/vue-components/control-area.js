@@ -2,7 +2,8 @@ Vue.component('control-area', {
     data:function(){return {
         viewing:'main', // or tags
         peers:[],
-        themeTags:['ad','ascii','art','birthday','chat','code','conspiracy',
+        tagsDisplayed:'theme', // or 'lang'
+        themeTags:['ad','ascii-art','birthday','chat','code','conspiracy',
             'emoticon','eulogy','hello','holiday','insult','link','love',
             'marriage','meme','meta','poetry','politcs','quote','religion',
             'satoshi','signature','test','tribute','xss'],
@@ -14,10 +15,15 @@ Vue.component('control-area', {
             'romanian','russian','serbian','slovak','spanish','swedish',
             'turkish','ukrainian','vietnamese'],
         tags:[], // currently selected tags
-        tagsDisplayed:'theme', // or 'lang'
+        searchValue:null,
+        searchFilter:null,
+        searchColor:'#fff',
         valid:false,
-        bins:20, // for timeline histogram quantizing
-        years:[2009,2010,2011,2012,2013,2014,2015,2016,2017,2018]
+        tl:{ // for timeline stuff
+            bins:40,
+            arr:[]
+        },
+        years:[2009,2010,2011,2012,2013,2014,2015,2016,2017,2018],
     }},
     props:{
         DataBc:Object // blockchain
@@ -84,7 +90,7 @@ Vue.component('control-area', {
                 'border': '2px solid #8800FF',
                 'padding': '10px',
                 'background': '#000',
-                'color': '#fff',
+                'color': this.searchColor,
                 'user-select':'none'
             }
         },
@@ -145,19 +151,47 @@ Vue.component('control-area', {
                 'strokeOpacity': 1.0
             }
         },
+        filtPathCSS:function(){
+            return {
+                'fill': '#5ADDFF',
+                'stroke': '#5ADDFF',
+                'strokeWidth': 4,
+                'fillOpacity': 0.4,
+                'strokeOpacity': 1.0
+            }
+        },
         timePathCSS:function(){
             return {
                 'stroke': '#fff',
                 'strokeWidth': 8,
             }
         },
+        timeMrkCSS:function(){
+            return {
+                'stroke': '#fff',
+                'strokeWidth': 2,
+            }
+        },
         timeLineStr:function(){
             return `M0 ${this.svgD().h} L ${this.svgD().w} ${this.svgD().h}`
         },
-        pathStr() {
+        timeMrkStr:function(){
+            let pos = (this.DataBc.index/this.DataBc.height)*this.svgD().w
+            return `M${pos} 0 L ${pos} ${this.svgD().h}`
+        },
+        timeTxt:function(){
+            return (this.DataBc.index/this.DataBc.height)*this.svgD().w + 10
+        },
+        pathStr:function() {
             let values = this.createBins()
             return this.pathD( values, this.lineCmd )
-            // return this.pathD( values, this.bezierCmd )
+        },
+        filtPathStr:function() {
+            let values = this.createBins(true)
+            return this.pathD( values, this.lineCmd )
+        },
+        isFiltering:function(){
+            return (this.valid || this.searchFilter || this.tags.length>0)
         }
     },
     methods:{
@@ -186,6 +220,25 @@ Vue.component('control-area', {
                 this.tagsDisplayed = "theme"
             }
         },
+        switchBackToMain(){
+            this.viewing = 'main'
+            let filter = { search:this.searchFilter, tags:this.tags }
+            this.DataBc.updateFilteredIndexes(filter,()=>{
+                // console.log(this.DataBc.filteredIndexes)
+            })
+        },
+        inputSearch:function(e){
+            this.searchValue = e.target.value
+            this.searchColor = '#fff'
+        },
+        updateSearch:function(){
+            this.searchFilter = (this.searchValue=="") ? null : this.searchValue
+            let filter = { search:this.searchFilter, tags:this.tags }
+            this.DataBc.updateFilteredIndexes(filter,()=>{
+                this.searchColor = '#5ADDFF'
+                // console.log(this.DataBc.filteredIndexes)
+            })
+        },
         selectTag:function(e){
             let tag = e.target.textContent
                 tag = tag.replace(/\n/g, "")
@@ -207,26 +260,50 @@ Vue.component('control-area', {
                 return 'show thematic tags'
             }
         },
+        toggleValid:function(){
+            this.valid = !this.valid
+            this.DataBc.validOnly = this.valid
+        },
         validToggleMessage:function(){
             if(this.valid){
-                return 'showing only human written messages'
+                return 'filtering out blocks with no messages'
             } else {
                 return 'showing all UTF8 data in blockchain'
             }
         },
-        createBins:function(){
+        createFilteredValues:function(){
+            let b = this.DataBc
+            let f = b.filtering
+            let v = b.validOnly
+            let a = []
+            if( f ){
+                a = b.filteredIndexes
+                if(v) a=a.filter(i=>b.messageIdxsMap.valid.hasOwnProperty(i))
+            } else if( v ){
+                a = b.messageIndexes.valid
+            }
+            return a
+        },
+        tlCurIdx:function(){
+            return this.tl.arr.indexOf(this.DataBc.index)+1
+        },
+        createBins:function(filter){
             let xCount = 0
             let yTally = 0
-            let binSze = this.DataBc.height / this.bins
+            let binSze = this.DataBc.height / this.tl.bins
             let values = []
-            this.DataBc.messageIndexes.all.forEach((v,i)=>{
-                if( v < binSze * (xCount+1) ){
-                    yTally++
-                } else {
-                    values.push( [xCount*(binSze+1),yTally] )
-                    xCount++
-                }
+            let arr = (filter) ?
+                this.createFilteredValues() : this.DataBc.messageIndexes.all
+
+            for(let i = 0; i < this.tl.bins; i++) values.push([i,0])
+            arr.forEach(v=>{
+                let binIdx = this.map(v,0,this.DataBc.height,0,this.tl.bins-1)
+                    binIdx = Math.round(binIdx)
+                values[binIdx][1]++
+                // if(filter)console.log(binIdx,v)
             })
+            this.tl.arr = arr
+
             // reduce to scale
             let nudge = 10
             let maxX = Math.max(...values.map(p=>p[0]))
@@ -273,11 +350,6 @@ Vue.component('control-area', {
             let y = cur[1] + Math.sin(angle) * length
             return [x,y]
         },
-        bezierCmd:function(p,i,a){
-            let [cpsX,cpsY] = this.cntrlPnt(a[i-1], a[i-2], p)
-            let [cpeX,cpeY] = this.cntrlPnt(p, a[i-1], a[+1],true)
-            return `C ${cpsX},${cpsY} ${cpeX},${cpeY} ${p[0]},${p[1]}`
-        },
         lineCmd:function(p){
             return `L ${p[0]} ${p[1]}`
         },
@@ -294,15 +366,21 @@ Vue.component('control-area', {
             <section :style="mainSecCSS">
                 <div :style="btnsCSS">
                     <div>
-                        <input type="text" placeholder="search term" :style="inputCSS">
-                        <button :style="searchBtnCSS">filter</button>
-                    </div>
-                    <div @click="valid=!valid">
-                        <span :style="bCSS">{{ validToggleMessage() }}</span>
+                        <input type="text" placeholder="search term"
+                               :style="inputCSS"
+                               @input="inputSearch($event)">
+                        <button :style="searchBtnCSS" @click="updateSearch()">
+                            filter</button>
                     </div>
                     <div>
                         <span :style="bCSS" @click="viewing='tags'">
-                            filtering messages by {{tags.length}} tags &gt;&gt;</span>
+                            filtering messages by {{tags.length}}
+                            tag<span v-if="tags.length!==1">s</span>
+                             &gt;&gt;
+                        </span>
+                    </div>
+                    <div @click="toggleValid()">
+                        <span :style="bCSS">{{ validToggleMessage() }}</span>
                     </div>
                 </div>
 
@@ -310,11 +388,17 @@ Vue.component('control-area', {
                      :view-box="viewbox" :style="svgCSS">
                     <g>
                         <path :style="pathCSS" :d="pathStr"></path>
+                        <path :style="filtPathCSS" :d="filtPathStr"></path>
+                        <path :style="timeMrkCSS" :d="timeMrkStr"></path>
                         <path :style="timePathCSS" :d="timeLineStr"></path>
                     </g>
+                    <text :x="timeTxt" y="10" v-if="isFiltering"
+                        font-family="monospace" font-size="14" fill="#fff">
+                        {{tlCurIdx()}}/{{tl.arr.length}}
+                    </text>
                     <text v-for="(y,i) in years"
                           :x="(svgD().w/9.33333)*i" :y="svgD().h-8"
-                          font-family="monospace" font-size="18" fill="#fff">
+                          font-family="monospace" font-size="14" fill="#fff">
                         |{{y}}
                     </text>
                 </svg>
@@ -322,7 +406,7 @@ Vue.component('control-area', {
 
             <section :style="tagSecCSS">
                 <div :style="tagsCntrlCSS">
-                    <div :style="bCSS" @click="viewing='main'">
+                    <div :style="bCSS" @click="switchBackToMain()">
                         &lt;&lt; back to timeline </div>
                     <div :style="bCSS" @click="switchTagsDisplayed()">
                         {{ tagTypeMessage() }} </div>

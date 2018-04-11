@@ -7,8 +7,15 @@ class Blockchain {
         this.scene = config.scene
         this.getAuthHeaders = config.getAuthHeaders
         this.height = config.height
+
         this.messageIndexes = config.messageIndexes
-        // messageIndexes = {all:[], sfw:[], valid:[], bookmarked:[]}
+        this.messageIdxsMap = this.makeMsgIdxDict()
+        // messageIndexes = {all:[], valid:[], sfw:[], bookmarked:[]}
+        this.filteredIndexes = [] // if cntrl has filters set
+        this.filtering = false // if cntrl has tags &&/or filter
+        this.sfwOnly = true // TODO expose as prop to make this optional
+        this.validOnly = false // if cntrl has valid filter on
+
         this.speed = config.speed || 500
         this.serverIP = config.ip || 'localhost:8989'
         this.renderTotal = 9
@@ -16,6 +23,8 @@ class Blockchain {
         this.shiftLock = false
         this.blocks = []
         this.index = 0
+        // reference to gui.$refs.cntrl (cntlr component)
+        this.cntrl = null
     }
 
     init(){
@@ -33,6 +42,17 @@ class Blockchain {
         }
     }
 
+    makeMsgIdxDict(){
+        let dict = {}
+        for( let prop in this.messageIndexes ){
+            dict[prop] = {}
+            this.messageIndexes[prop].forEach(idx=>{
+                dict[prop][idx] = null
+            })
+        }
+        return dict
+    }
+
     firstBlockXYZ(){
         return this.blocks[0].position
     }
@@ -43,6 +63,32 @@ class Blockchain {
             { headers: this.getAuthHeaders() })
         .then(res => res.json())
         .then(data => { callback(data) })
+        .catch(err=>{ console.error(err) })
+    }
+
+    updateFilteredIndexes(filter, callback){
+        // filter = {search:'string',tags:[Array]}
+        this.filtering = (filter.search||(filter.tags.length>0)) ? true : false
+
+        // create params to fetch filteredIndexes
+        let params = ''
+        if(filter.search){
+            params = `?search=${filter.search}`
+            filter.tags.forEach((t)=>{ params += `&tags[]=${t}` })
+        } else {
+            filter.tags.forEach((t,i)=>{
+                if(i==0) params += `?tags[]=${t}`
+                else params += `&tags[]=${t}`
+            })
+        }
+        fetch(
+            `https://${this.serverIP}/api/filter/blocklist${params}`,
+            { headers: this.getAuthHeaders() })
+        .then(res => res.json())
+        .then(data => {
+            this.filteredIndexes = data
+            if(callback) callback(data)
+        })
         .catch(err=>{ console.error(err) })
     }
 
@@ -60,6 +106,49 @@ class Blockchain {
         }
     }
 
+    _getClosestValues(a, x) {
+        // via https://stackoverflow.com/a/4431347/1104148
+        var lo = -1, hi = a.length;
+        while (hi - lo > 1) {
+            var mid = Math.round((lo + hi)/2);
+            if (a[mid] <= x) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        if (a[lo] == x) hi = lo;
+        return [a[lo], a[hi]];
+    }
+
+    _incLogix(dir){
+        let f = this.filtering
+        let v = this.validOnly
+        let idx = this.index
+        let arr = []
+
+        if( f ){
+            arr = this.filteredIndexes
+            if(v) arr=arr.filter(i=>this.messageIdxsMap.valid.hasOwnProperty(i))
+        } else if( v ){
+            arr = this.messageIndexes.valid
+        } else {
+            // if no filters are set at all
+            idx += dir
+            return { index:idx, avert:false }
+        }
+
+        arr = arr.sort()
+        let vals = this._getClosestValues(arr,idx+dir)
+        idx = (dir>0) ? vals[1] : vals[0]
+
+        if(typeof idx=="undefined"){
+            return { index:this.index, avert:true }
+        } else {
+            return { index:idx, avert:false }
+        }
+    }
+
     _shift( dir, callback ){
         if( !this.shiftLock ){
             // only shift next if we're not already at the end
@@ -67,11 +156,23 @@ class Blockchain {
             if( (dir > 0 && this.index !== this.height) ||
                 (dir < 0 && this.index !== 0 ) ){
                     this.shiftLock = true
-                    this.index += dir
-                    this.blocks.forEach(b=>b.update(dir))
-                    setTimeout( callback, this.blocks[0].speed+100 )
+                    // this.index += dir
+                    let nxt = this._incLogix(dir)
+                    this.index = nxt.index
+                    if( !nxt.avert ){
+                        this.blocks.forEach(b=>b.update(dir))
+                        setTimeout( callback, this.blocks[0].speed+100 )
+                    } else {
+                        setTimeout(()=>{
+                            this.shiftLock = false
+                        },this.blocks[0].speed+100 )
+                    }
                 }
         }
+    }
+
+    seekTo(){
+        // TODO for bookmarks && timeline scrubbing
     }
 
     shiftNext(){

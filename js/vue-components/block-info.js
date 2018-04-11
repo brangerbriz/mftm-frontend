@@ -69,12 +69,12 @@ Vue.component('block-info', {
         },
         getDate:function(time){
             let date = new Date(time*1000)
-            let Y = date.getFullYear()
-            let M = date.getMonth()+1
-            let D = date.getDate()
-            let h = date.getHours()
-            let m = "0" + date.getMinutes()
-            let s = "0" + date.getSeconds()
+            let Y = date.getUTCFullYear()
+            let M = date.getUTCMonth()+1
+            let D = date.getUTCDate()
+            let h = date.getUTCHours()
+            let m = "0" + date.getUTCMinutes()
+            let s = "0" + date.getUTCSeconds()
             return `${D}/${M}/${Y} ${h}:${m.substr(-2)}:${s.substr(-2)}`
         },
         show:function(block){

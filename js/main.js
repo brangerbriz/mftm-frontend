@@ -43,23 +43,25 @@ socket.on('blockchain-data', function(data) {
     camera.position.z = 4.5
     camera.position.y = 3.5
 
-    function getFirstBlockInfo(){
-        blockchain.getCurrentBlockInfo((block)=>{
-            gui.$refs.nfo.show(block)
-            blockchain.getCurrentBlockMessages((messages)=>{
-                gui.$refs.tx.show(block,messages)
-            })
-        })
-    }
+    // BUG why is this firing again at random times? && failing b/c nfo is undefined ???
+    // function getFirstBlockInfo(){
+    //
+    // }
 
     gui = new Vue({
         el: '#gui',
-        data: {
-            blockchain:blockchain,
-            camera:camera
-        },
-        created:getFirstBlockInfo
+        data: { blockchain, camera },
+        created:function(){
+            blockchain.getCurrentBlockInfo((block)=>{
+                gui.$refs.nfo.show(block)
+                blockchain.getCurrentBlockMessages((messages)=>{
+                    gui.$refs.tx.show(block,messages)
+                })
+            })
+        }
     })
+
+    blockchain.cntrlData = gui.$refs.cntrl
 
     draw()
 })
@@ -100,3 +102,8 @@ function logMessages(idx){
     .then(data => { console.log(data) })
     .catch(err=>{ console.error(err) })
 }
+
+// NOTE
+// blockchain.messageIndexes = {all:[], valid:[], sfw:[], bookmarked:[]}
+// blockchain.filteredIndexes: indexes to show based on both filter search / tags
+// gui.valid: whether to show valid (human readable) or all messages

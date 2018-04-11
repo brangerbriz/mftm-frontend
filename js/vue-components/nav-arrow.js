@@ -32,6 +32,11 @@ Vue.component('nav-arrow', {
         shift:function(){
             let block, messages
             let blockchain = this.DataBc
+            let filters = {
+                valid:blockchain.validOnly,
+                searchTerm:gui.$refs.cntrl.searchFilter,
+                tags:gui.$refs.cntrl.tags
+            }
 
             this.opacity="0.5"
             gui.$refs.nfo.hide()
@@ -40,7 +45,7 @@ Vue.component('nav-arrow', {
             const showData = this.after(3,()=>{
                 this.opacity="1"
                 gui.$refs.nfo.show(block)
-                gui.$refs.tx.show(block,messages)
+                gui.$refs.tx.show(block,messages,filters)
             })
 
             if(this.DataType=="left") blockchain.shiftPrev()

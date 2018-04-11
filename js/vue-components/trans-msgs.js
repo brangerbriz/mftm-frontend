@@ -62,6 +62,15 @@ Vue.component('trans-msgs', {
             }
             // TODO don't wordwrap 'ascii art' or 'code'
         },
+        annotationCSS:function(){
+            return {
+                background: 'rgba(136,0,255,1)',
+                color: '#fff',
+                padding: '8px',
+                margin: '4px 0px 2px 0px'
+            }
+            // TODO don't wordwrap 'ascii art' or 'code'
+        },
         abbrToggleCSS:function(){
             return {
                 float:'right',
@@ -105,9 +114,20 @@ Vue.component('trans-msgs', {
             }
             return arr
         },
-        formatMessage:function(msg){
+        formatMessage:function(m){
+            let msg = m.data
             let str = JSON.stringify(msg)
-            return str.substring(1, str.length-1)
+            str = str.substring(1, str.length-1)
+            return str
+        },
+        formatAnnotation:function(m){
+            let a = m.annotation
+            console.log(a.indexOf('tx:'))
+            if( a.indexOf('tx:')==0 && a.length==69){
+                return null
+            } else {
+                return a
+            }
         },
         isCoinbase:function(t,i){
             if(this.abbreviate){
@@ -124,7 +144,23 @@ Vue.component('trans-msgs', {
             if(this.abbreviate) return sMsg
             else return hMsg
         },
-        show:function(block,messages){
+        passFilter:function(msg,filt){
+            if(!filt) filt = {}
+            let show = true
+            // if filtering out non-valid && message isn't valid...
+            if( filt.valid && !msg.valid ) show = false
+            // if filtering by tags && message doesn't contain tag...
+            if( filt.tags && filt.tags.length>0 ){
+                let common = msg.tags.filter(t=>filt.tags.includes(t))
+                if(common.length==0) show = false
+            }
+            // if filtering by search term && term not in message...
+            if( filt.searchTerm ){
+                if( msg.data.search(filt.searchTerm)<0 ) show = false
+            }
+            return show
+        },
+        show:function(block,messages,filters){
             if(block) {
                 // update block data && reset other details:
                 // tx arrays + messages array + abbreviate bool
@@ -132,16 +168,18 @@ Vue.component('trans-msgs', {
                 this.lazyTx = block.tx.slice(0,25)
                 if(messages){
                     this.abbreviate = true
-                    let dict = {} // create message dictionary
+                    let d = {} // create message dictionary
                     messages.forEach((m)=>{
-                        if( dict.hasOwnProperty(m.transaction_hash) ){
-                            dict[m.transaction_hash].annotation += m.annotation
-                            dict[m.transaction_hash].data += m.data
-                            dict[m.transaction_hash].tags =
-                                [...dict[m.transaction_hash].tags,...m.tags]
-                        } else dict[m.transaction_hash] = m
+                        if( this.passFilter(m,filters) ){
+                            if( d.hasOwnProperty(m.transaction_hash) ){
+                                d[m.transaction_hash].annotation += m.annotation
+                                d[m.transaction_hash].data += m.data
+                                d[m.transaction_hash].tags =
+                                    [...d[m.transaction_hash].tags,...m.tags]
+                            } else d[m.transaction_hash] = m
+                        }
                     })
-                    this.messages = dict
+                    this.messages = d
                 } else {
                     this.abbreviate = false
                     this.messages = null
@@ -177,8 +215,17 @@ Vue.component('trans-msgs', {
                         </a>
                         <span v-if="isCoinbase(t,i)">(coinbase)</span>
                         <span style="float:right;"> {{ shortBTC(t) }} BTC </span>
-                        <div :style="messageCSS">
-                            {{ formatMessage(messages[t.hash].data) }}
+                        <div v-if="DataBc.sfwOnly && messages[t.hash].nsfw" :style="annotationCSS">
+                            [REMOVED: NOT SAFE FOR WORK]
+                        </div>
+                        <div v-else :style="messageCSS">
+<pre v-if="messages[t.hash].tags.indexOf('ascii-art')>=0 || messages[t.hash].format">
+{{ messages[t.hash].data }}
+</pre>
+                            <span v-else>{{messages[t.hash].data}}</span>
+                        </div>
+                        <div v-if="messages[t.hash].annotation && formatAnnotation(messages[t.hash])" :style="annotationCSS">
+                            {{formatAnnotation(messages[t.hash])}}
                         </div>
                     </span>
                 </div>
@@ -195,7 +242,13 @@ Vue.component('trans-msgs', {
                     <span style="float:right;"> {{ shortBTC(t) }} BTC </span>
                     <div v-if="messages && messages.hasOwnProperty(t.hash)"
                          :style="messageCSS">
-                         {{ formatMessage(messages[t.hash].data) }}
+                        <span v-if="DataBc.sfwOnly && messages[t.hash].nsfw">
+                            [REMOVED: NOT SAFE FOR WORK]
+                        </span>
+<pre v-else-if="messages[t.hash].tags.indexOf('ascii-art')>=0 || messages[t.hash].format">
+{{ messages[t.hash].data }}
+</pre>
+                        <span v-else>{{messages[t.hash].data}}</span>
                     </div>
                 </div>
 
@@ -204,29 +257,3 @@ Vue.component('trans-msgs', {
         </section>
     </div>`
 })
-/*
-    // test 200254
-    test blocks:
-    '348772', '370'
-    '348752', '160'
-    '319798', '113'
-    '329227', '113'
-    '397596', '98'
-    '396640', '97'
-    '396738', '96'
-    '320713', '89'
-    '397148', '86'
-    '393631', '86'
-    '397147', '86'
-    '348771', '84'
-    '393778', '84'
-    '396715', '83'
-    '393650', '81'
-    '395046', '79'
-    '494196', '76'
-    '372706', '74'
-    '426732', '71'
-    '397158', '70'
-    '426681', '69'
-    '397164', '69'
-*/
