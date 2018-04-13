@@ -1,7 +1,7 @@
 Vue.component('control-area', {
     data:function(){return {
         viewing:'main', // or tags
-        peers:[],
+        peers:{},
         tagsDisplayed:'theme', // or 'lang'
         themeTags:['ad','ascii-art','birthday','chat','code','conspiracy',
             'emoticon','eulogy','hello','holiday','insult','link','love',
@@ -24,9 +24,33 @@ Vue.component('control-area', {
             arr:[]
         },
         years:[2009,2010,2011,2012,2013,2014,2015,2016,2017,2018],
+        bookmarks:[]
     }},
     props:{
         DataBc:Object // blockchain
+    },
+    created:function(){
+        // TODO revisit when we have final bookmarks
+        let bz = this.DataBc.messageIndexes.bookmarked
+        bz = bz.slice(0,40) // for testing
+        this.bookmarks = bz.map((index,i)=>{
+            let r = 10
+            let x = (index/this.DataBc.height) * this.svgD().w
+            // let y = this.svgD().h - r/2 - 10
+            let y = Math.random()*(this.svgD().h-r) + r
+            return { x, y, r, index }
+        })
+        // this.bookmarks = this.bookmarks.map((b,i)=>{
+        //     if(i>0){
+        //         let p = this.bookmarks[i-1]
+        //         if( p.x+b.r > b.x-b.r ){
+        //             // b.x = p.x
+        //             b.y = p.y-20
+        //         }
+        //     }
+        //     return b
+        // })
+        // console.log(JSON.stringify(this.bookmarks))
     },
     computed:{
         secCSS:function(){
@@ -53,6 +77,14 @@ Vue.component('control-area', {
                 'padding': '5px',
                 'display': 'flex',
                 'user-select':'none'
+            }
+        },
+        marqueeOuterCSS:function(){
+            return {
+                'width': '450px',
+                'whiteSpace': 'nowrap',
+                'overflow': 'hidden',
+                'boxSizing': 'border-box',
             }
         },
         mainSecCSS:function(){
@@ -208,10 +240,40 @@ Vue.component('control-area', {
                 'margin':'0px 9px 9px 0px'
             }
         },
-        displayPeers:function(n){
-            // TODO marquee logic
-            // ( consider only updating peers on socket if array is diff )
-            return this.peers[0]
+        updatePeers:function(addrs){
+            addrs.forEach((addr)=>{
+                let a = addr.split(':')
+                let ip = a[0]
+                let port = a[1]
+                if( !this.peers.hasOwnProperty(ip) ){
+                    this.$set(this.peers,ip,{ip,port})
+                    fetch(`http://api.ipstack.com/${a[0]}?access_key=${IPSTACK_KEY}`)
+                    .then(res => res.json())
+                    .then(d => {
+                        console.log(d)
+                        this.$set(this.peers,ip,Object.assign(this.peers[d.ip],d))
+                    }).catch(err=>{ console.error(err) })
+                }
+            })
+        },
+        countPeers:function(){
+            if( Object.keys(this.peers).length > 0 ){
+                return Object.keys(this.peers).length
+            } else {
+                return '?'
+            }
+        },
+        displayPeers:function(){
+            if( Object.keys(this.peers).length > 0 ){
+                return Object.keys(this.peers).map((ip)=>{
+                    let p = this.peers[ip]
+                    let loc = (p.city && p.region_code) ?
+                        `(${p.city},${p.region_code})` : ``
+                    return `${p.ip}:${p.port} ${loc}`
+                }).join(' -- ')
+            } else {
+                return '...'
+            }
         },
         switchTagsDisplayed:function(){
             if(this.tagsDisplayed=="theme"){
@@ -279,11 +341,7 @@ Vue.component('control-area', {
                 }
             }
         },
-        clickBookmark:function(e){
-            console.log(e)
-        },
-        clickTL:function(e){
-            let blockIdx = e.layerX / this.svgD().w
+        timelineJump:function(blockSpot){
             let block, messages
             let blockchain = this.DataBc
             let filters = {
@@ -304,7 +362,7 @@ Vue.component('control-area', {
                 gui.$refs.tx.show(block,messages,filters)
             })
 
-            blockchain.seekTo( blockIdx,(target)=>{
+            blockchain.seekTo( blockSpot,(target)=>{
                 new TWEEN.Tween(blockchain)
                     .to({ index:target }, 250)
                     .easing(TWEEN.Easing.Sinusoidal.Out)
@@ -327,6 +385,17 @@ Vue.component('control-area', {
             })
 
             setTimeout(showData,blockchain.speed+100)
+        },
+        clickTL:function(e){
+            if(this.bookmarkJump) return;
+            let blockSpot = e.layerX / this.svgD().w
+            this.timelineJump( blockSpot )
+        },
+        jumpToBookmark:function(b){
+            this.bookmarkJump = true
+            let spot = b / this.DataBc.height
+            this.timelineJump(spot)
+            setTimeout(()=>{ this.bookmarkJump=false },100)
         },
 
         createFilteredValues:function(){
@@ -450,6 +519,9 @@ Vue.component('control-area', {
                         <path :style="timeMrkCSS" :d="timeMrkStr"></path>
                         <path :style="timePathCSS" :d="timeLineStr"></path>
                     </g>
+                    <circle fill="#5ADDFF" v-for="b in bookmarks" :key="b.index"
+                        @click="jumpToBookmark(b.index)"
+                        :cx="b.x" :cy="b.y" :r="b.r"/>
                     <text :x="timeTxt" y="10" v-if="isFiltering"
                         font-family="monospace" font-size="14" fill="#fff">
                         {{tlCurIdx()}}/{{tl.arr.length}}
@@ -487,10 +559,11 @@ Vue.component('control-area', {
 
             <div :style="nodeNfoCSS">
                 <div>
-                    bitcoin node connected to
-                    {{peers.length>0 ? peers.length : '?'}}
-                    peers:</div>
-                <div>{{ displayPeers(0) }}</div>
+                    this computer is a bitcoin node, has connected to
+                    {{ countPeers() }} peers:</div>
+                <div :style="marqueeOuterCSS">
+                    <span class="marquee">{{ displayPeers() }}</span>
+                </div>
             </div>
 
         </section>

@@ -77,7 +77,8 @@ socket.on('received-block', function(data) {
 socket.on('peer-info', function(data) {
     if(typeof gui !=="undefined"){
         let addrs = data.map(p=>p.addr)
-        gui.$refs.cntrl.peers = addrs
+        // gui.$refs.cntrl.peers = addrs
+        gui.$refs.cntrl.updatePeers(addrs)
     }
 })
 
