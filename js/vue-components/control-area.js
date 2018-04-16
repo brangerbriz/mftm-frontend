@@ -1,6 +1,7 @@
 Vue.component('control-area', {
     data:function(){return {
         viewing:'main', // or tags
+        mempool:0,
         peers:{},
         tagsDisplayed:'theme', // or 'lang'
         themeTags:['ad','ascii-art','birthday','chat','code','conspiracy',
@@ -77,14 +78,6 @@ Vue.component('control-area', {
                 'padding': '5px',
                 'display': 'flex',
                 'user-select':'none'
-            }
-        },
-        marqueeOuterCSS:function(){
-            return {
-                'width': '450px',
-                'whiteSpace': 'nowrap',
-                'overflow': 'hidden',
-                'boxSizing': 'border-box',
             }
         },
         mainSecCSS:function(){
@@ -240,6 +233,39 @@ Vue.component('control-area', {
                 'margin':'0px 9px 9px 0px'
             }
         },
+        marqueeOuterCSS:function(){
+            let width = 0
+            if(this.$el && this.$el.children){
+                let p = 10 // nodeNfoCSS total padding
+                let els = this.$el.children[0].children
+                let lastDiv = els[els.length-1]
+                let txtDiv = lastDiv.children[0]
+                width = innerWidth - p - txtDiv.offsetWidth
+            }
+            return {
+                'width': width+'px',
+                'whiteSpace': 'nowrap',
+                'overflow': 'hidden',
+                'boxSizing': 'border-box',
+            }
+        },
+        marqueeInnerCSS:function(){
+            let ms = 1000
+            if(this.$el && this.$el.children){
+                let p = 10 // nodeNfoCSS total padding
+                let els = this.$el.children[0].children
+                let lastDiv = els[els.length-1]
+                let addrDiv = lastDiv.children[1]
+                let span = addrDiv.children[0]
+                let width = span.offsetWidth
+                ms = width * 10
+            }
+            return {
+                'display': 'inline-block',
+                'paddingLeft': '100%',
+                'animation': `marquee ${ms}ms linear infinite`
+            }
+        },
         updatePeers:function(addrs){
             addrs.forEach((addr)=>{
                 let a = addr.split(':')
@@ -250,7 +276,7 @@ Vue.component('control-area', {
                     fetch(`http://api.ipstack.com/${a[0]}?access_key=${IPSTACK_KEY}`)
                     .then(res => res.json())
                     .then(d => {
-                        console.log(d)
+                        // console.log(d)
                         this.$set(this.peers,ip,Object.assign(this.peers[d.ip],d))
                     }).catch(err=>{ console.error(err) })
                 }
@@ -267,10 +293,14 @@ Vue.component('control-area', {
             if( Object.keys(this.peers).length > 0 ){
                 return Object.keys(this.peers).map((ip)=>{
                     let p = this.peers[ip]
-                    let loc = (p.city && p.region_code) ?
-                        `(${p.city},${p.region_code})` : ``
-                    return `${p.ip}:${p.port} ${loc}`
-                }).join(' -- ')
+                    let loc = ''
+                    if( p.city && p.country_code=="US"){
+                        loc = `(${p.city}, ${p.region_name} USA)`
+                    } else if(p.city){
+                        loc = `(${p.city}, ${p.country_name})`
+                    }
+                    return `${p.ip} ${loc}`
+                }).join(' | ')
             } else {
                 return '...'
             }
@@ -559,10 +589,12 @@ Vue.component('control-area', {
 
             <div :style="nodeNfoCSS">
                 <div>
-                    this computer is a bitcoin node, has connected to
-                    {{ countPeers() }} peers:</div>
-                <div :style="marqueeOuterCSS">
-                    <span class="marquee">{{ displayPeers() }}</span>
+                    This computer is a bitcoin node; it's relayed
+                    {{mempool}} transaction<span v-if="mempool!=1">s</span>
+                    and connected to {{countPeers()}} peers:&nbsp;
+                </div>
+                <div :style="marqueeOuterCSS()">
+                    <span :style="marqueeInnerCSS()">{{displayPeers()}}</span>
                 </div>
             </div>
 

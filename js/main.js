@@ -82,6 +82,14 @@ socket.on('peer-info', function(data) {
     }
 })
 
+// this will be received when a node receives an unconfirmed transaction
+socket.on('received-tx', function(data) {
+    // console.log('received-tx:', data)
+    if(typeof gui !=="undefined"){
+        gui.$refs.cntrl.mempool++
+    }
+})
+
 // for debugging
 function logBlock(idx){
     if(typeof idx=="undefined")
