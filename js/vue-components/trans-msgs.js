@@ -122,7 +122,6 @@ Vue.component('trans-msgs', {
         },
         formatAnnotation:function(m){
             let a = m.annotation
-            console.log(a.indexOf('tx:'), a.length, a)
             if( a.indexOf('tx:')==0){
                 return null
             } else {
