@@ -17,6 +17,10 @@ Vue.component('nav-arrow', {
     },
     methods:{
         css:function(){
+            let show = 'block'
+            if( gui ){
+                show = (gui.$refs.cntrl.viewing=='main') ? 'block' : 'none'
+            }
 
             let props = {
                 opacity:this.opacity,
@@ -24,7 +28,8 @@ Vue.component('nav-arrow', {
                 position:'absolute',
                 'z-index':10,
                 top:this.top+"px",
-                height:'150px'
+                height:'150px',
+                display:show
             }
 
             if(this.DataType=='left') props.left="50px"
