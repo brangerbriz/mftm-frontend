@@ -25,3 +25,39 @@ a { color:#fff; text-decoration: none; }
     0%   { transform: translate(0, 0); }
     100% { transform: translate(-100%, 0); }
 }
+
+#hiddenBtn {
+    position: absolute;
+    top: 0px; right: 0px;
+    z-index: 99999999;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+#hiddenMenu {
+    position: fixed;
+    top: 20px; right:20px;
+    z-index: 99999999;
+    width: 500px;
+    height: 500px;
+    background: #000;
+    border: 1px solid #fff;
+    padding: 10px;
+    display: none;
+}
+    #buttons {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 10px
+    }
+    #buttons > span {
+        border: 1px solid #fff;
+        padding: 3px 8px;
+        cursor: pointer;
+    }
+    #consoleDump {
+        border: 1px solid #fff;
+        padding: 5px;
+        height: 445px;
+    }

@@ -44,11 +44,6 @@ socket.on('blockchain-data', function(data) {
     camera.position.z = 4.5
     camera.position.y = 3.5
 
-    // BUG why is this firing again at random times? && failing b/c nfo is undefined ???
-    // function getFirstBlockInfo(){
-    //
-    // }
-
     gui = new Vue({
         el: '#gui',
         data: { blockchain, camera },
