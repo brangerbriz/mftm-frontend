@@ -3,7 +3,7 @@
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
 let blockchain, gui
-const ipaddr = '192.168.1.252:8989'//'labs.brangerbriz.com:2222'
+const ipaddr = 'localhost:8989'//'labs.brangerbriz.com:2222'
 const socket = io.connect(`https://${ipaddr}`)
 const scene = new THREE.Scene()
 let w = innerWidth, h = innerHeight, f = 4 // frustum size
