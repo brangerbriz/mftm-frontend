@@ -3,6 +3,7 @@ let closeBtn = document.querySelector('#close')
 let menu = document.querySelector('#hiddenMenu')
 let restartBtn = document.querySelector('#restart')
 let nsfwBtn = document.querySelector('#nsfwToggle')
+let tnBlock = document.querySelector('#testNewBlock')
 let consoleDump = document.querySelector('#consoleDump')
 
 showBtn.addEventListener('click',()=>{
@@ -13,8 +14,19 @@ closeBtn.addEventListener('click',()=>{
     menu.style.display = "none"
 })
 
+tnBlock.addEventListener('click',()=>{
+    fetch(`js/test-block.json`)
+    .then(res => res.json())
+    .then(data => {
+        MB.newBlock(data)
+        menu.style.display = "none"
+    })
+    .catch(err=>{ console.error(err) })
+})
+
 restartBtn.addEventListener('click',()=>{
     window.location.reload()
+    // if(gui.fart.test) console.log('test')
 })
 
 nsfwBtn.addEventListener('click',()=>{
@@ -23,11 +35,12 @@ nsfwBtn.addEventListener('click',()=>{
     else nsfwBtn.textContent = 'censor nsfw'
 })
 
-window.onerror = function(msg, url, line, col, err) {
-    console.log(err)
-    // alert('Error message: '+msg+'\nURL: '+url+'\nLine Number: '+line);
-    let path = url.split('/')
+window.addEventListener('error',(err)=>{
+    // console.log(err)
+    let path = err.filename.split('/')
     let file = path[path.length-1]
-    consoleDump.textContent += `ERR:${file}:${line}:${col}: ${msg} - ${err}\n`
-    return true;
-}
+    let str = `ERR:${file}:${err.lineno}:${err.colno}: ${err.message}\n`
+    if(err.error) str += `${err.error}\n`
+    consoleDump.textContent += str
+    return true
+})

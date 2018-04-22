@@ -3,23 +3,40 @@
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
 let blockchain, gui
-const ipaddr = '192.168.1.252:8989'//'labs.brangerbriz.com:2222'
+const ipaddr = '10.1.10.41:8989'//'192.168.1.252:8989'//'labs.brangerbriz.com:2222'
 const socket = io.connect(`https://${ipaddr}`)
-const scene = new THREE.Scene()
 let w = innerWidth, h = innerHeight, f = 4 // frustum size
+
+// --------------------------
+// block chain animation scene
+// --------------------------
+const scene = new THREE.Scene()
 // camera = new THREE.PerspectiveCamera( 50, w/h, 1, 10000 ) // for debug
 const camera = new THREE.OrthographicCamera(
     f*(w/h)/-2, f*(w/h)/2, f/2, f/-2, 1, 2000 )
-
 const renderer = new THREE.WebGLRenderer()
 renderer.setSize( w, h )
 document.body.appendChild( renderer.domElement )
 
+// --------------------------
+// new block animation scene
+// --------------------------
+const MB = new BlockMined({
+    selector:'#minedBlock',
+    camFrustum: f
+})
+
+// --------------------------
+// animation loop
+// --------------------------
 function draw() {
     requestAnimationFrame( draw )
     TWEEN.update()
     renderer.render(scene, camera)
+    if(MB.animating) MB.render()
 }
+
+draw()
 
 // _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/``````````\ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 // . . . . . . . . . . . . . . . . . . .   events  . . . . . . . . . . . . . . .
@@ -64,13 +81,13 @@ socket.on('blockchain-data', function(data) {
 
 // this will be received when a node receives a new block
 socket.on('received-block', function(data) {
-    // TODO somekind of visual queue/event for a new block (github issue#3)
     blockchain.height = data.height
+    MB.newBlock(data)
 })
 
 // this will be fired every 10 seconds
 socket.on('peer-info', function(data) {
-    if(typeof gui !=="undefined"){
+    if(typeof gui !=="undefined" && gui.$refs.cntrl){
         let addrs = data.map(p=>p.addr)
         // gui.$refs.cntrl.peers = addrs
         gui.$refs.cntrl.updatePeers(addrs)
@@ -80,7 +97,7 @@ socket.on('peer-info', function(data) {
 // this will be received when a node receives an unconfirmed transaction
 socket.on('received-tx', function(data) {
     // console.log('received-tx:', data)
-    if(typeof gui !=="undefined"){
+    if(typeof gui !=="undefined" && gui.$refs.cntrl){
         gui.$refs.cntrl.mempool++
     }
 })
@@ -107,6 +124,7 @@ function logMessages(idx){
     .then(data => { console.log(data) })
     .catch(err=>{ console.error(err) })
 }
+
 
 // NOTE
 // blockchain.messageIndexes = {all:[], valid:[], sfw:[], bookmarked:[]}
