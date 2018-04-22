@@ -32,15 +32,16 @@ Vue.component('control-area', {
     },
     created:function(){
         // TODO revisit when we have final bookmarks
-        let bz = this.DataBc.messageIndexes.bookmarked
-        bz = bz.slice(0,40) // for testing
-        this.bookmarks = bz.map((index,i)=>{
-            let r = 10
-            let x = (index/this.DataBc.height) * this.svgD().w
-            // let y = this.svgD().h - r/2 - 10
-            let y = Math.random()*(this.svgD().h-r) + r
-            return { x, y, r, index }
-        })
+        // let bz = this.DataBc.messageIndexes.bookmarked
+        // bz = bz.slice(0,40) // for testing
+        // this.bookmarks = bz.map((index,i)=>{
+        //     let r = 10
+        //     let x = (index/this.DataBc.height) * this.svgD().w
+        //     // let y = this.svgD().h - r/2 - 10
+        //     let y = Math.random()*(this.svgD().h-r) + r
+        //     return { x, y, r, index }
+        // })
+
         // this.bookmarks = this.bookmarks.map((b,i)=>{
         //     if(i>0){
         //         let p = this.bookmarks[i-1]
