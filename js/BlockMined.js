@@ -4,6 +4,7 @@ class BlockMined {
         this.ele.style.opacity = 0.0
         this.ele.style.display = "none"
         this.animating = false
+        this.txCap = 1000
 
         // text textContent
         this.callEle = document.createElement('div')
@@ -134,7 +135,10 @@ class BlockMined {
     }
 
     makeTxSprites(data){
-        data.tx.forEach(tx => {
+        let _tx = (data.tx.length > this.txCap) ?
+            data.tx.slice(0,this.txCap) : data.tx
+
+        _tx.forEach(tx => {
             let imgData = this.createSpriteMap( this.shortTx(tx) )
             let map = new THREE.TextureLoader().load( imgData )
             let mat = new THREE.SpriteMaterial({
