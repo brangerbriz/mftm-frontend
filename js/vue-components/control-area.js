@@ -6,11 +6,11 @@ Vue.component('control-area', {
         tagsDisplayed:'theme', // or 'lang'
         themeTags:['ad','ascii-art','birthday','chat','code','conspiracy',
             'emoticon','eulogy', 'favorite', 'hello','holiday','insult','link','love',
-            'marriage','meme','meta','poetry','politcs','quote','religion',
+            'marriage','meme','meta','poetry','politics','quote','religion',
             'satoshi','signature','test','tribute','xss'],
-        langTags:['arabic', 'azerbaijani', 'bengali', 'bulgarian', 'catalan', 
-                  'chinese', 'corsican', 'croatian', 'czech', 'dutch', 
-                  'english', 'esperanto', 'estonian', 'french', 'galician', 
+        langTags:['arabic', 'azerbaijani', 'bengali', 'bulgarian', 'catalan',
+                  'chinese', 'corsican', 'croatian', 'czech', 'dutch',
+                  'english', 'esperanto', 'estonian', 'french', 'galician',
                   'german', 'greek', 'hawaiian', 'hebrew', 'hindi', 'hungarian',
                   'icelandic', 'indonesian', 'italian', 'japanese', 'korean',
                   'kyrgyz', 'latin', 'latvian', 'lithuanian', 'malay',
@@ -34,24 +34,35 @@ Vue.component('control-area', {
     props:{
         DataBc:Object // blockchain
     },
+
     created:function(){
-        // TODO revisit when we have final bookmarks
-        // let bz = this.DataBc.messageIndexes.bookmarked
-        // bz = bz.slice(0,40) // for testing
-        // this.bookmarks = bz.map((index,i)=>{
-        //     let r = 10
-        //     let x = (index/this.DataBc.height) * this.svgD().w
-        //     // let y = this.svgD().h - r/2 - 10
-        //     let y = Math.random()*(this.svgD().h-r) + r
-        //     return { x, y, r, index }
-        // })
+
+        function nudgeHack(i,y,h){
+            let newVal = y
+            let nudges = [8,10,18,33]
+            if( nudges.includes(i) ) newVal=h/2
+            return newVal
+        }
+
+        let bz = this.DataBc.messageIndexes.bookmarked
+        bz = bz.slice(0,40) // for testing
+        this.bookmarks = bz.map((index,i)=>{
+            let r = 10
+            let x = (index/this.DataBc.height) * this.svgD().w
+            // let y = this.svgD().h - r/2 - 10
+            // let y = Math.random()*(this.svgD().h-r) + r
+            // let y = Math.sin(x) * (this.svgD().h-10) + this.svgD().h/2
+            let y = Math.sin(x) * (this.svgD().h/2.477) + this.svgD().h/2
+            y = nudgeHack(i,y,this.svgD().h)
+            return { x, y, r, index }
+        })
 
         // this.bookmarks = this.bookmarks.map((b,i)=>{
         //     if(i>0){
         //         let p = this.bookmarks[i-1]
         //         if( p.x+b.r > b.x-b.r ){
         //             // b.x = p.x
-        //             b.y = p.y-20
+        //             b.y = p.y-40
         //         }
         //     }
         //     return b
