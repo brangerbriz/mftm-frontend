@@ -81,7 +81,7 @@ a { color:#fff; text-decoration: none; }
     -moz-user-select: none; /* Firefox */
     user-select: none;
 }
-svg {
+body {
     -moz-user-drag: none;
     user-drag: none;
 }
