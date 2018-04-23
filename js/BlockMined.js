@@ -107,7 +107,7 @@ class BlockMined {
             vec3 norm = normalize( fdxy );
             float x = norm.x;
             float y = norm.y + phase;
-            float z = norm.z * 6.0 + 0.25;
+            float z = norm.z * 6.0 + 1.25;
             gl_FragColor = vec4( x, y, z, 1.0 );
         }`
     }
