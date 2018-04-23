@@ -565,9 +565,11 @@ Vue.component('control-area', {
                         <path :style="timeMrkCSS" :d="timeMrkStr"></path>
                         <path :style="timePathCSS" :d="timeLineStr"></path>
                     </g>
-                    <circle fill="#5ADDFF" v-for="b in bookmarks" :key="b.index"
-                        @click="jumpToBookmark(b.index)"
-                        :cx="b.x" :cy="b.y" :r="b.r"/>
+                    <g v-if="!isFiltering">
+                        <circle fill="#5ADDFF" v-for="b in bookmarks" :key="b.index"
+                            @click="jumpToBookmark(b.index)"
+                            :cx="b.x" :cy="b.y" :r="b.r"/>
+                    </g>
                     <text :x="timeTxt" y="10" v-if="isFiltering"
                         font-family="monospace" font-size="14" fill="#fff">
                         {{tlCurIdx()}}/{{tl.arr.length}}
