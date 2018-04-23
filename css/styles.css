@@ -71,3 +71,17 @@ a { color:#fff; text-decoration: none; }
         padding: 5px;
         height: 445px;
     }
+
+/* ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - */
+/*             FOR INSTALLATION VERSION ONLY           */
+/*             REMOVE FOR WEB VERSION                  */
+/* ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - */
+
+#gui:nth-child(4) section {
+    -moz-user-select: none; /* Firefox */
+    user-select: none;
+}
+svg {
+    -moz-user-drag: none;
+    user-drag: none;
+}
