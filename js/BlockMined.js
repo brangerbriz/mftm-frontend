@@ -292,7 +292,7 @@ class BlockMined {
         if( o > 0 ){
             setTimeout(()=>{ this.reset() },50)
         } else {
-            this.ele.display = 'none'
+            this.ele.style.display = 'none'
             this.animating = false
             this.infoEle.innerHTML = ""
             this.infoEle.style.opacity = 0.0
