@@ -3,7 +3,7 @@
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
 let blockchain, gui
-const ipaddr = '10.1.10.41:8989'//'192.168.1.252:8989'//'labs.brangerbriz.com:2222'
+const ipaddr = 'localhost:8989'//'192.168.1.252:8989'//'labs.brangerbriz.com:2222'
 const socket = io.connect(`https://${ipaddr}`)
 let w = innerWidth, h = innerHeight, f = 4 // frustum size
 
