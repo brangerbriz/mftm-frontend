@@ -21,15 +21,8 @@ Vue.component('trans-msgs', {
         block:{ // block data
             hash:'x',
             height:0,
-            time:0,
-            tx:[{
-                hash:'x',
-                vin:[{coinbase:'x'}],
-                vout:[{value:0}]
-            }]
+            time:0
         },
-        lazyTx:[], // lazy loaded transactions (updates on scroll)
-        abbrTx:[] // abbreviated transactions (only exapnd message txs)
     }},
     props:{
         DataBc:Object // blockchain
@@ -67,7 +60,6 @@ Vue.component('trans-msgs', {
                 padding: '8px',
                 margin: '4px 0px 2px 0px'
             }
-            // TODO don't wordwrap 'ascii art' or 'code'
         },
         annotationCSS:function(){
             return {
@@ -75,17 +67,6 @@ Vue.component('trans-msgs', {
                 color: '#fff',
                 padding: '8px',
                 margin: '4px 0px 2px 0px'
-            }
-            // TODO don't wordwrap 'ascii art' or 'code'
-        },
-        abbrToggleCSS:function(){
-            return {
-                float:'right',
-                background: '#ffffff',
-                color:'#000000',
-                padding:"0px 8px",
-                cursor:'pointer',
-                'user-select':'none'
             }
         }
     },
@@ -96,30 +77,8 @@ Vue.component('trans-msgs', {
             let p2 = a.slice(a.length-11,a.length-1).join('')
             return `${p1}...${p2}`
         },
-        shortBTC(t){
-            let val = t.vout.map(o=>o.value).reduce((a,b)=>a+b)
-            return Math.round(val*10000)/10000
-        },
         hashURL:function(hash){
             return `https://blockchain.info/tx/${hash}`
-        },
-        txLazyLoad:function(e){
-            let l = this.lazyTx.length
-            if(e.target.scrollTop==e.target.scrollTopMax
-                && l<this.block.tx.length){
-                this.lazyTx = [...this.lazyTx,...this.block.tx.slice(l,l+25)]
-            }
-        },
-        setupAbbrTx:function(block){
-            let arr = []
-            if(this.messages){
-                let hashIdxz = []
-                for(let m in this.messages){
-                    let idx = block.tx.findIndex(t=>t.hash==m)
-                    arr.push( block.tx[idx] )
-                }
-            }
-            return arr
         },
         formatMessage:function(m){
             let msg = m.data
@@ -142,22 +101,7 @@ Vue.component('trans-msgs', {
                 m.format
             )
         },
-        isCoinbase:function(t,i){
-            if(this.abbreviate){
-                let idMatch = this.block.tx[0].txid == t.txid
-                return (i==0 && idMatch)
-            } else {
-                return (i==0)
-            }
-        },
-        showHideMessage:function(){
-            let diff = this.block.tx.length - this.abbrTx.length
-            let sMsg = `show the ${diff} hidden transaction${(diff==1)?'':'s'}`
-            let hMsg = 'hide messageless transactions'
-            if(this.abbreviate) return sMsg
-            else return hMsg
-        },
-        passFilter:function(msg,filt){
+        passFilter:function(msg,filt){ // NOTE
             if(!filt) filt = {}
             let show = true
             // if filtering out non-valid && message isn't valid...
@@ -174,7 +118,6 @@ Vue.component('trans-msgs', {
             return show
         },
         position:function(){
-            console.log('hey')
             // update CSS to fit on screen
             if(this.$el && gui.$refs.cntrl.$el ){
                 let totalHeight = this.$el.children[0].offsetHeight
@@ -194,29 +137,22 @@ Vue.component('trans-msgs', {
         },
         show:function(block,messages,filters){
             if(block) {
-                // update block data && reset other details:
-                // tx arrays + messages array + abbreviate bool
+                // update block data
                 this.block = block
-                this.lazyTx = block.tx.slice(0,25)
-                if(messages){
-                    this.abbreviate = true
-                    let d = {} // create message dictionary
-                    messages.forEach((m)=>{
-                        if( this.passFilter(m,filters) ){
-                            if( d.hasOwnProperty(m.transaction_hash) ){
-                                d[m.transaction_hash].annotation += m.annotation
-                                d[m.transaction_hash].data += m.data
-                                d[m.transaction_hash].tags =
-                                    [...d[m.transaction_hash].tags,...m.tags]
-                            } else d[m.transaction_hash] = m
-                        }
-                    })
-                    this.messages = d
-                } else {
-                    this.abbreviate = false
-                    this.messages = null
-                }
-                this.abbrTx = this.setupAbbrTx(block)
+                // create message dictionary
+                let d = {}
+                messages.forEach((m)=>{
+                    if( this.passFilter(m,filters) ){
+                        if( d.hasOwnProperty(m.transaction_hash) ){
+                            d[m.transaction_hash].annotation += m.annotation
+                            d[m.transaction_hash].data += m.data
+                            d[m.transaction_hash].tags =
+                                [...d[m.transaction_hash].tags,...m.tags]
+                        } else d[m.transaction_hash] = m
+                        d[m.transaction_hash].hash = m.transaction_hash
+                    }
+                })
+                this.messages = d
             }
             this.anim+=0.2
             if(this.anim<1) setTimeout(this.show,50)
@@ -231,62 +167,34 @@ Vue.component('trans-msgs', {
         }
     },
     template:`<div>
-        <section :style="secCSS" @scroll="txLazyLoad($event)">
+        <section :style="secCSS">
             <div :style="headerCSS">
-                transaction list
-                <span :style="abbrToggleCSS" @click="abbreviate=!abbreviate">
-                    {{ showHideMessage() }}
-                </span>
+                messages found in block
             </div>
 
-            <span v-if="abbreviate">
 
-                <div v-for="(t,i) in abbrTx" :key="t.hash">
-                    <span>
-                        <b>hash/id:</b>
-                        <a :href="hashURL(t.hash)" target="_blank">
-                            {{ shortHash(t.hash) }}
-                        </a>
-                        <span v-if="isCoinbase(t,i)">(coinbase)</span>
-                        <span style="float:right;"> {{ shortBTC(t) }} BTC </span>
-                        <div v-if="DataBc.sfwOnly && messages[t.hash].nsfw" :style="annotationCSS">
-                            [REMOVED: NOT SAFE FOR WORK]
-                        </div>
-                        <div v-else :style="messageCSS">
-<pre v-if="needsPre(messages[t.hash])">
-{{ messages[t.hash].data }}
-</pre>
-                            <span v-else>{{messages[t.hash].data}}</span>
-                        </div>
-                        <div v-if="messages[t.hash].annotation && formatAnnotation(messages[t.hash])" :style="annotationCSS">
-                            {{formatAnnotation(messages[t.hash])}}
-                        </div>
-                    </span>
-                </div>
-
-            </span>
-            <span v-else>
-
-                <div v-for="(t,i) in lazyTx" :key="t.hash">
-                    <b>hash/id:</b>
+            <div v-for="(t,i) in messages" :key="t.hash">
+                <span>
+                    <b>transaction hash/id:</b>
                     <a :href="hashURL(t.hash)" target="_blank">
                         {{ shortHash(t.hash) }}
                     </a>
-                    <span v-if="isCoinbase(t,i)">(coinbase)</span>
-                    <span style="float:right;"> {{ shortBTC(t) }} BTC </span>
-                    <div v-if="messages && messages.hasOwnProperty(t.hash)"
-                         :style="messageCSS">
-                        <span v-if="DataBc.sfwOnly && messages[t.hash].nsfw">
-                            [REMOVED: NOT SAFE FOR WORK]
-                        </span>
-<pre v-else-if="needsPre(messages[t.hash])">
+                    <div v-if="DataBc.sfwOnly && messages[t.hash].nsfw" :style="annotationCSS">
+                        [HIDDEN: NOT SAFE FOR WORK]
+                    </div>
+                    <div v-else :style="messageCSS">
+<pre v-if="needsPre(messages[t.hash])">
 {{ messages[t.hash].data }}
 </pre>
                         <span v-else>{{messages[t.hash].data}}</span>
                     </div>
-                </div>
+                    <div v-if="messages[t.hash].annotation && formatAnnotation(messages[t.hash])" :style="annotationCSS">
+                        {{formatAnnotation(messages[t.hash])}}
+                    </div>
+                </span>
+            </div>
 
-            </span>
+
 
         </section>
     </div>`
