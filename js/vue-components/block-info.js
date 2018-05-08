@@ -5,12 +5,7 @@ Vue.component('block-info', {
         block:{ // block data
             hash:'x',
             height:0,
-            time:0,
-            tx:[{
-                hash:'x',
-                vin:[{coinbase:'x'}],
-                vout:[{value:0}]
-            }]
+            time:0
         }
     }},
     props:{
@@ -77,13 +72,14 @@ Vue.component('block-info', {
             return `0 0 ${150*this.anim} 50`
         },
         getDate:function(time){
-            let date = new Date(time*1000)
-            let Y = date.getUTCFullYear()
-            let M = date.getUTCMonth()+1
-            let D = date.getUTCDate()
-            let h = date.getUTCHours()
-            let m = "0" + date.getUTCMinutes()
-            let s = "0" + date.getUTCSeconds()
+            console.log(time)
+            let date = new Date(time)
+            let Y = date.getFullYear()
+            let M = date.getMonth()+1
+            let D = date.getDate()
+            let h = date.getHours()
+            let m = "0" + date.getMinutes()
+            let s = "0" + date.getSeconds()
             return `${D}/${M}/${Y} ${h}:${m.substr(-2)}:${s.substr(-2)}`
         },
         show:function(block){
