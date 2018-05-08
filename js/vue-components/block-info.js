@@ -18,18 +18,7 @@ Vue.component('block-info', {
         DataCam:Object
     },
     mounted:function(){
-        let b = this.DataBc.blocks[0].position
-        let p = new THREE.Vector3( b.x, b.y, b.z )
-
-        // via: https://stackoverflow.com/a/27448966/1104148
-        let vec = p.project(this.DataCam)
-            vec.x = (vec.x + 1) / 2 * innerWidth + (innerHeight/3.95)
-            vec.y = -(vec.y - 1) / 2 * innerHeight - (innerWidth/11)
-
-        this.coords = {
-            x: vec.x,
-            y: vec.y
-        }
+        this.position()
     },
     computed:{
         circleCSS:function(){
@@ -69,6 +58,21 @@ Vue.component('block-info', {
         }
     },
     methods:{
+        position:function(){
+            let b = this.DataBc.blocks[0].position
+            let p = new THREE.Vector3( b.x, b.y, b.z )
+
+            // via: https://stackoverflow.com/a/27448966/1104148
+            // let vec = p.project(this.DataCam)
+            let vec = new THREE.Vector3( 0,0,0 )
+                vec.x = (vec.x + 1) / 2 * innerWidth + (innerHeight/3.95)
+                vec.y = -(vec.y - 1) / 2 * innerHeight - (innerWidth/11)
+
+            this.coords = {
+                x: vec.x,
+                y: (vec.y>=200) ? vec.y : 200
+            }
+        },
         lineVB:function(){
             return `0 0 ${150*this.anim} 50`
         },

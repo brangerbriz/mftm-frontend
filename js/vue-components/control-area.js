@@ -3,6 +3,12 @@ Vue.component('control-area', {
         viewing:'main', // or tags
         mempool:0,
         peers:{},
+        size: {
+            // padding - (btnsCSS.width + btnsCSS.right)
+            w: innerWidth-(18*2)-(401+18),
+            h: 161 // btnsCSS.height
+        },
+        ml: (this.viewing=='main') ? '0px' : -innerWidth+"px",
         tagsDisplayed:'theme', // or 'lang'
         themeTags:['ad','ascii-art','birthday','chat','code','conspiracy',
             'emoticon','eulogy', 'favorite', 'hello','holiday','insult','link','love',
@@ -48,26 +54,14 @@ Vue.component('control-area', {
         bz = bz.slice(0,40) // for testing
         this.bookmarks = bz.map((index,i)=>{
             let r = 10
-            let x = (index/this.DataBc.height) * this.svgD().w
-            // let y = this.svgD().h - r/2 - 10
-            // let y = Math.random()*(this.svgD().h-r) + r
-            // let y = Math.sin(x) * (this.svgD().h-10) + this.svgD().h/2
-            let y = Math.sin(x) * (this.svgD().h/2.477) + this.svgD().h/2
-            y = nudgeHack(i,y,this.svgD().h)
+            let x = (index/this.DataBc.height) * this.size.w
+            let y = Math.sin(x) * (this.size.h/2.477) + this.size.h/2
+            y = nudgeHack(i,y,this.size.h)
             return { x, y, r, index }
         })
 
-        // this.bookmarks = this.bookmarks.map((b,i)=>{
-        //     if(i>0){
-        //         let p = this.bookmarks[i-1]
-        //         if( p.x+b.r > b.x-b.r ){
-        //             // b.x = p.x
-        //             b.y = p.y-40
-        //         }
-        //     }
-        //     return b
-        // })
-        // console.log(JSON.stringify(this.bookmarks))
+        this.position()
+
     },
     computed:{
         secCSS:function(){
@@ -97,17 +91,16 @@ Vue.component('control-area', {
             }
         },
         mainSecCSS:function(){
-            let ml = (this.viewing=='main') ? '0px' : -innerWidth+"px"
             return {
                 'position':'absolute',
-                'margin-left':ml,
+                'margin-left':this.ml,
                 'transition':'all 1s'
             }
         },
         btnsCSS:function(){
             return {
                 'position': 'absolute',
-                'right': `-${innerWidth-this.svgD().w-18}px`,
+                'right': `-${innerWidth-this.size.w-18}px`,
                 'top': '18px',
                 'display': 'flex',
                 'flex-direction': 'column',
@@ -148,9 +141,10 @@ Vue.component('control-area', {
             }
         },
         svgCSS:function(){
+            console.log('ran svgCSS')
             return {
-                'width': this.svgD().w+'px',
-                'height': this.svgD().h+'px',
+                'width': this.size.w+'px',
+                'height': this.size.h+'px',
                 'position': 'relative',
                 'left': '18px',
                 'top': '18px',
@@ -181,7 +175,7 @@ Vue.component('control-area', {
             }
         },
         viewbox:function(){
-          return `0 0 ${this.svgD().w} ${this.svgD().h}`;
+          return `0 0 ${this.size.w} ${this.size.h}`;
         },
         pathCSS:function(){
             return {
@@ -214,14 +208,14 @@ Vue.component('control-area', {
             }
         },
         timeLineStr:function(){
-            return `M0 ${this.svgD().h} L ${this.svgD().w} ${this.svgD().h}`
+            return `M0 ${this.size.h} L ${this.size.w} ${this.size.h}`
         },
         timeMrkStr:function(){
-            let pos = (this.DataBc.index/this.DataBc.height)*this.svgD().w
-            return `M${pos} 0 L ${pos} ${this.svgD().h}`
+            let pos = (this.DataBc.index/this.DataBc.height)*this.size.w
+            return `M${pos} 0 L ${pos} ${this.size.h}`
         },
         timeTxt:function(){
-            return (this.DataBc.index/this.DataBc.height)*this.svgD().w + 10
+            return (this.DataBc.index/this.DataBc.height)*this.size.w + 10
         },
         pathStr:function() {
             let values = this.createBins()
@@ -236,6 +230,10 @@ Vue.component('control-area', {
         }
     },
     methods:{
+        position:function(){
+            this.ml = (this.viewing=='main') ? '0px' : -innerWidth+"px"
+            this.size.w = innerWidth-(18*2)-(401+18)
+        },
         tagCSS:function(tag){
             let clr = (this.tags.indexOf(tag)>=0) ?
                 {b:'rgb(90, 221, 255)',c:'rgb(0, 0, 0)'} :
@@ -434,7 +432,7 @@ Vue.component('control-area', {
         },
         clickTL:function(e){
             if(this.bookmarkJump) return;
-            let blockSpot = e.layerX / this.svgD().w
+            let blockSpot = e.layerX / this.size.w
             this.timelineJump( blockSpot )
         },
         jumpToBookmark:function(b){
@@ -482,22 +480,16 @@ Vue.component('control-area', {
             let maxX = Math.max(...values.map(p=>p[0]))
             let maxY = Math.max(...values.map(p=>p[1]))
             values = values.map((p)=>{
-                let x = this.map(p[0],0,maxX,0,this.svgD().w)
-                let y = this.map(p[1],0,maxY,0,this.svgD().h-nudge)
-                    y = this.svgD().h - y - nudge// flip && nudge up
+                let x = this.map(p[0],0,maxX,0,this.size.w)
+                let y = this.map(p[1],0,maxY,0,this.size.h-nudge)
+                    y = this.size.h - y - nudge// flip && nudge up
                 return [Math.round(x),Math.round(y)]
             })
             // add header/footer points to fill out shape
-            values.unshift([0,this.svgD().h])
-            values.push([this.svgD().w,this.svgD().h])
-            values.push([0,this.svgD().h])
+            values.unshift([0,this.size.h])
+            values.push([this.size.w,this.size.h])
+            values.push([0,this.size.h])
             return values
-        },
-        svgD:function(){
-            // padding - (btnsCSS.width + btnsCSS.right)
-            let w = innerWidth-(18*2)-(401+18)
-            let h = 161 // btnsCSS.height
-            return { w:w, h:h }
         },
         map:function(value, inMin, inMax, outMin, outMax) {
             return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
@@ -575,7 +567,7 @@ Vue.component('control-area', {
                         {{tlCurIdx()}}/{{tl.arr.length}}
                     </text>
                     <text v-for="(y,i) in years"
-                          :x="(svgD().w/9.33333)*i" :y="svgD().h-8"
+                          :x="(size.w/9.33333)*i" :y="size.h-8"
                           font-family="monospace" font-size="14" fill="#fff">
                         |{{y}}
                     </text>

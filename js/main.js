@@ -3,7 +3,7 @@
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
 let blockchain, gui
-const ipaddr = '10.1.10.41:8989'//'192.168.1.252:8989'//'labs.brangerbriz.com:2222'
+const ipaddr = '192.168.1.252:8989'//'10.1.10.41:8989'////'labs.brangerbriz.com:2222'
 const socket = io.connect(`https://${ipaddr}`)
 let w = innerWidth, h = innerHeight, f = 4 // frustum size
 
@@ -18,13 +18,6 @@ const renderer = new THREE.WebGLRenderer()
 renderer.setSize( w, h )
 document.body.appendChild( renderer.domElement )
 
-// --------------------------
-// new block animation scene
-// --------------------------
-const MB = new BlockMined({
-    selector:'#minedBlock',
-    camFrustum: f
-})
 
 // --------------------------
 // animation loop
@@ -33,7 +26,6 @@ function draw() {
     requestAnimationFrame( draw )
     TWEEN.update()
     renderer.render(scene, camera)
-    if(MB.animating) MB.render()
 }
 
 draw()
@@ -41,6 +33,21 @@ draw()
 // _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/``````````\ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 // . . . . . . . . . . . . . . . . . . .   events  . . . . . . . . . . . . . . .
 // -------------------------------------\,,,,,,,,,,/----------------------------
+
+
+window.addEventListener('resize',function(){
+    var aspect = innerWidth / innerHeight
+    camera.left   = - f * aspect / 2
+    camera.right  =   f * aspect / 2
+    camera.top    =   f / 2
+    camera.bottom = - f / 2
+    camera.updateProjectionMatrix()
+    renderer.setSize( innerWidth, innerHeight )
+    if( gui.$refs && gui.$refs.nfo ) gui.$refs.nfo.position()
+    if( gui.$refs && gui.$refs.tx ) gui.$refs.tx.position()
+    if( gui.$refs && gui.$refs.cntrl ) gui.$refs.cntrl.position()
+})
+
 
 // setup scene (blockchain/gui/camera) on blockchain-data
 socket.on('blockchain-data', function(data) {
@@ -66,9 +73,9 @@ socket.on('blockchain-data', function(data) {
         data: { blockchain, camera },
         created:function(){
             blockchain.getCurrentBlockInfo((block)=>{
-                gui.$refs.nfo.show(block)
+                if(gui.$refs.nfo) gui.$refs.nfo.show(block)
                 blockchain.getCurrentBlockMessages((messages)=>{
-                    gui.$refs.tx.show(block,messages)
+                    if(gui.$refs.tx) gui.$refs.tx.show(block,messages)
                 })
             })
         }
@@ -77,13 +84,13 @@ socket.on('blockchain-data', function(data) {
     blockchain.cntrlData = gui.$refs.cntrl
 
     draw()
+
+    if( innerHeight<767 || innerWidth<1700){
+        alert(`Note: this page is best viewed at ~ 1700x767px,
+            your browser is currently ${innerWidth}x${innerHeight}`)
+    }
 })
 
-// this will be received when a node receives a new block
-socket.on('received-block', function(data) {
-    blockchain.height = data.height
-    MB.newBlock(data)
-})
 
 // this will be fired every 10 seconds
 socket.on('peer-info', function(data) {
@@ -101,32 +108,3 @@ socket.on('received-tx', function(data) {
         gui.$refs.cntrl.mempool++
     }
 })
-
-// for debugging
-function logBlock(idx){
-    if(typeof idx=="undefined")
-        blockchain.getCurrentBlockInfo(d=>console.log(d))
-    else fetch(
-        `https://${ipaddr}/api/block?index=${idx}`,
-        { headers: getAuthHeaders() })
-    .then(res => res.json())
-    .then(data => { console.log(data) })
-    .catch(err=>{ console.error(err) })
-}
-
-function logMessages(idx){
-    if(typeof idx=="undefined")
-        blockchain.getCurrentBlockMessages(m=>console.log(m))
-    else fetch(
-        `https://${ipaddr}/api/block/messages?index=${idx}`,
-        { headers: getAuthHeaders() })
-    .then(res => res.json())
-    .then(data => { console.log(data) })
-    .catch(err=>{ console.error(err) })
-}
-
-
-// NOTE
-// blockchain.messageIndexes = {all:[], valid:[], sfw:[], bookmarked:[]}
-// blockchain.filteredIndexes: indexes to show based on both filter search / tags
-// gui.valid: whether to show valid (human readable) or all messages
