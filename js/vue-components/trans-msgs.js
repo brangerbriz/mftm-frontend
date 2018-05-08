@@ -2,6 +2,13 @@ Vue.component('trans-msgs', {
     data:function(){return {
         anim:0, // animation percentage
         abbreviate:false,
+        cssv:{ // some of the initial CSS values for secCSS
+            pt:50, // padding top
+            pb:10, // padding bottom
+            h:570, // max-height
+            b:4,   // border
+            t:80,  // top
+        },
         messages:null, /* null || Array w/Objects:
             annotation:String,
             block_timestamp:String,
@@ -34,12 +41,12 @@ Vue.component('trans-msgs', {
                 position:'absolute',
                 'z-index':10,
                 left:"140px",
-                top:"80px",
-                'max-height':'570px',
+                top:`${this.cssv.t}px`,
+                'max-height':`${this.cssv.h}px`,
                 width:'755px',
                 background:'rgba(0,0,0,0.5)',
-                border:'4px solid #fff',
-                padding:'50px 10px 10px 10px',
+                border:`${this.cssv.b}px solid #fff`,
+                padding:`${this.cssv.pt}px 10px ${this.cssv.pb}px 10px`,
                 overflow: 'scroll'
             }
         },
@@ -166,6 +173,25 @@ Vue.component('trans-msgs', {
             }
             return show
         },
+        position:function(){
+            console.log('hey')
+            // update CSS to fit on screen
+            if(this.$el && gui.$refs.cntrl.$el ){
+                let totalHeight = this.$el.children[0].offsetHeight
+                let cntrlHeight = gui.$refs.cntrl.$el.children[0].offsetHeight
+                let spaceAvail = innerHeight-cntrlHeight
+                if( spaceAvail <= totalHeight+this.cssv.t ){
+                    if( spaceAvail <= totalHeight ){
+                        let pad = this.cssv.pt+this.cssv.pb+this.cssv.b
+                        let space = spaceAvail - pad
+                        this.cssv.t = (space*0.10)/2
+                        this.cssv.h = space*0.90
+                    } else {
+                        this.cssv.t = (spaceAvail-totalHeight)/2
+                    }
+                }
+            }
+        },
         show:function(block,messages,filters){
             if(block) {
                 // update block data && reset other details:
@@ -195,6 +221,8 @@ Vue.component('trans-msgs', {
             this.anim+=0.2
             if(this.anim<1) setTimeout(this.show,50)
             else if(this.anim>1) this.anim=1
+
+            this.position()
         },
         hide:function(){
             this.anim-=0.5
