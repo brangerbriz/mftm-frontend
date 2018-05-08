@@ -11,7 +11,7 @@ class Blockchain {
         this.filteredIndexes = [] // if cntrl has filters set
         this.filtering = false // if cntrl has tags &&/or filter
         this.sfwOnly = config.sfw || false
-        this.validOnly = false // if cntrl has valid filter on
+        this.validOnly = true // WEB VERSION ONLY EVER SHOWS VALID
 
         this.speed = config.speed || 500
         this.serverIP = config.ip || 'localhost:8989'

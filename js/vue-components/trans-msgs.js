@@ -101,11 +101,13 @@ Vue.component('trans-msgs', {
                 m.format
             )
         },
-        passFilter:function(msg,filt){ // NOTE
+        passFilter:function(msg,filt){
             if(!filt) filt = {}
             let show = true
+
             // if filtering out non-valid && message isn't valid...
-            if( filt.valid && !msg.valid ) show = false
+            // if( filt.valid && !msg.valid ) show = false // ALWAYS VALID
+
             // if filtering by tags && message doesn't contain tag...
             if( filt.tags && filt.tags.length>0 ){
                 let common = msg.tags.filter(t=>filt.tags.includes(t))
