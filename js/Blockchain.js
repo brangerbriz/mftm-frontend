@@ -1,11 +1,8 @@
 class Blockchain {
     constructor( config ){
         if( !config ) throw new Error('Blockchain expecting config object')
-        if( !config.getAuthHeaders )
-            throw new Error('Blockchain expecting getAuthHeaders function')
 
         this.scene = config.scene
-        this.getAuthHeaders = config.getAuthHeaders
         this.height = config.height
 
         this.messageIndexes = config.messageIndexes
@@ -58,9 +55,7 @@ class Blockchain {
     }
 
     getCurrentBlockInfo(callback){
-        fetch(
-            `https://${this.serverIP}/api/block?index=${this.index}`,
-            { headers: this.getAuthHeaders() })
+        fetch(`https://${this.serverIP}/api/block?index=${this.index}`)
         .then(res => res.json())
         .then(data => { callback(data) })
         .catch(err=>{ console.error(err) })
@@ -81,9 +76,7 @@ class Blockchain {
                 else params += `&tags[]=${t}`
             })
         }
-        fetch(
-            `https://${this.serverIP}/api/filter/blocklist${params}`,
-            { headers: this.getAuthHeaders() })
+        fetch(`https://${this.serverIP}/api/filter/blocklist${params}`)
         .then(res => res.json())
         .then(data => {
             this.filteredIndexes = data
@@ -95,9 +88,7 @@ class Blockchain {
     getCurrentBlockMessages(callback){
         // TODO make these variable ( github issue#2 )
         if( this.messageIndexes.all.indexOf(this.index) >=0 ){
-            fetch(
-                `https://${this.serverIP}/api/block/messages?index=${this.index}`,
-                { headers: this.getAuthHeaders() })
+            fetch(`https://${this.serverIP}/api/block/messages?index=${this.index}`)
                 .then(res => res.json())
                 .then(data => { callback(data) })
                 .catch(err=>{ console.error(err) })

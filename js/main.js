@@ -50,8 +50,7 @@ socket.on('blockchain-data', function(data) {
         messageIndexes: data.blocklist,
         sfw: true,
         scene: scene,
-        ip: ipaddr,
-        getAuthHeaders: getAuthHeaders
+        ip: ipaddr
     })
 
     blockchain.init( scene )
@@ -106,23 +105,23 @@ socket.on('received-tx', function(data) {
 function logBlock(idx){
     if(typeof idx=="undefined")
         blockchain.getCurrentBlockInfo(d=>console.log(d))
-    else fetch(
-        `https://${ipaddr}/api/block?index=${idx}`,
-        { headers: getAuthHeaders() })
-    .then(res => res.json())
-    .then(data => { console.log(data) })
-    .catch(err=>{ console.error(err) })
+    else {
+        fetch(`https://${ipaddr}/api/block?index=${idx}`)
+        .then(res => res.json())
+        .then(data => { console.log(data) })
+        .catch(err=>{ console.error(err) })
+    }
 }
 
 function logMessages(idx){
     if(typeof idx=="undefined")
         blockchain.getCurrentBlockMessages(m=>console.log(m))
-    else fetch(
-        `https://${ipaddr}/api/block/messages?index=${idx}`,
-        { headers: getAuthHeaders() })
-    .then(res => res.json())
-    .then(data => { console.log(data) })
-    .catch(err=>{ console.error(err) })
+    else {
+        fetch(`https://${ipaddr}/api/block/messages?index=${idx}`)
+        .then(res => res.json())
+        .then(data => { console.log(data) })
+        .catch(err=>{ console.error(err) })
+    }
 }
 
 
