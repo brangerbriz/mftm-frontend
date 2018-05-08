@@ -86,7 +86,6 @@ class Blockchain {
     }
 
     getCurrentBlockMessages(callback){
-        // TODO make these variable ( github issue#2 )
         if( this.messageIndexes.all.indexOf(this.index) >=0 ){
             fetch(`https://${this.serverIP}/api/block/messages?index=${this.index}`)
                 .then(res => res.json())

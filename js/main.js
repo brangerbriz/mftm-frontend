@@ -89,21 +89,3 @@ socket.on('blockchain-data', function(data) {
             your browser is currently ${innerWidth}x${innerHeight}`)
     }
 })
-
-
-// this will be fired every 10 seconds
-socket.on('peer-info', function(data) {
-    if(typeof gui !=="undefined" && gui.$refs.cntrl){
-        let addrs = data.map(p=>p.addr)
-        // gui.$refs.cntrl.peers = addrs
-        gui.$refs.cntrl.updatePeers(addrs)
-    }
-})
-
-// this will be received when a node receives an unconfirmed transaction
-socket.on('received-tx', function(data) {
-    // console.log('received-tx:', data)
-    if(typeof gui !=="undefined" && gui.$refs.cntrl){
-        gui.$refs.cntrl.mempool++
-    }
-})

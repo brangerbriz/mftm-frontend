@@ -1,8 +1,6 @@
 Vue.component('control-area', {
     data:function(){return {
         viewing:'main', // or tags
-        mempool:0,
-        peers:{},
         size: {
             // padding - (btnsCSS.width + btnsCSS.right)
             w: innerWidth-(18*2)-(401+18),
@@ -11,7 +9,7 @@ Vue.component('control-area', {
         ml: (this.viewing=='main') ? '0px' : -innerWidth+"px",
         tagsDisplayed:'theme', // or 'lang'
         themeTags:['ad','ascii-art','birthday','chat','code','conspiracy',
-            'emoticon','eulogy', 'favorite', 'hello','holiday','insult','link','love',
+            'emoticon','eulogy', '★', 'hello','holiday','insult','link','love',
             'marriage','meme','meta','poetry','politics','quote','religion',
             'satoshi','signature','test','tribute','xss'],
         langTags:['arabic', 'azerbaijani', 'bengali', 'bulgarian', 'catalan',
@@ -30,10 +28,8 @@ Vue.component('control-area', {
         searchFilter:null,
         searchColor:'#fff',
         valid:false,
-        tl:{ // for timeline stuff
-            bins:40,
-            arr:[]
-        },
+        // for timeline stuff
+        tl:{ bins:40, arr:[] },
         years:[2009,2010,2011,2012,2013,2014,2015,2016,2017,2018],
         bookmarks:[]
     }},
@@ -70,24 +66,10 @@ Vue.component('control-area', {
                 'z-index':10,
                 'left':'0px',
                 'bottom':'0px',
-                'height':'240px',
+                'height':'196px',
                 'width':'100%',
                 'background':'#000',
                 'border-top': '2px solid #fff',
-            }
-        },
-        nodeNfoCSS:function(){
-            return {
-                'position':'fixed',
-                'z-index':11,
-                'left':'0px',
-                'bottom':'0px',
-                'width':'100%',
-                'background':'#323232',
-                'color':'#fff',
-                'padding': '5px',
-                'display': 'flex',
-                'user-select':'none'
             }
         },
         mainSecCSS:function(){
@@ -141,7 +123,6 @@ Vue.component('control-area', {
             }
         },
         svgCSS:function(){
-            console.log('ran svgCSS')
             return {
                 'width': this.size.w+'px',
                 'height': this.size.h+'px',
@@ -247,78 +228,6 @@ Vue.component('control-area', {
                 'margin':'0px 9px 9px 0px'
             }
         },
-        marqueeOuterCSS:function(){
-            let width = 0
-            if(this.$el && this.$el.children){
-                let p = 10 // nodeNfoCSS total padding
-                let els = this.$el.children[0].children
-                let lastDiv = els[els.length-1]
-                let txtDiv = lastDiv.children[0]
-                width = innerWidth - p - txtDiv.offsetWidth
-            }
-            return {
-                'width': width+'px',
-                'whiteSpace': 'nowrap',
-                'overflow': 'hidden',
-                'boxSizing': 'border-box',
-            }
-        },
-        marqueeInnerCSS:function(){
-            let ms = 1000
-            if(this.$el && this.$el.children){
-                let p = 10 // nodeNfoCSS total padding
-                let els = this.$el.children[0].children
-                let lastDiv = els[els.length-1]
-                let addrDiv = lastDiv.children[1]
-                let span = addrDiv.children[0]
-                let width = span.offsetWidth
-                ms = width * 10
-            }
-            return {
-                'display': 'inline-block',
-                'paddingLeft': '100%',
-                'animation': `marquee ${ms}ms linear infinite`
-            }
-        },
-        updatePeers:function(addrs){
-            addrs.forEach((addr)=>{
-                let a = addr.split(':')
-                let ip = a[0]
-                let port = a[1]
-                if( !this.peers.hasOwnProperty(ip) ){
-                    this.$set(this.peers,ip,{ip,port})
-                    fetch(`http://api.ipstack.com/${a[0]}?access_key=${IPSTACK_KEY}`)
-                    .then(res => res.json())
-                    .then(d => {
-                        // console.log(d)
-                        this.$set(this.peers,ip,Object.assign(this.peers[d.ip],d))
-                    }).catch(err=>{ console.error(err) })
-                }
-            })
-        },
-        countPeers:function(){
-            if( Object.keys(this.peers).length > 0 ){
-                return Object.keys(this.peers).length
-            } else {
-                return '?'
-            }
-        },
-        displayPeers:function(){
-            if( Object.keys(this.peers).length > 0 ){
-                return Object.keys(this.peers).map((ip)=>{
-                    let p = this.peers[ip]
-                    let loc = ''
-                    if( p.city && p.country_code=="US"){
-                        loc = `(${p.city}, ${p.region_name} USA)`
-                    } else if(p.city){
-                        loc = `(${p.city}, ${p.country_name})`
-                    }
-                    return `${p.ip} ${loc}`
-                }).join(' | ')
-            } else {
-                return '...'
-            }
-        },
         switchTagsDisplayed:function(){
             if(this.tagsDisplayed=="theme"){
                 this.tagsDisplayed = "lang"
@@ -349,6 +258,7 @@ Vue.component('control-area', {
             let tag = e.target.textContent
                 tag = tag.replace(/\n/g, "")
                 tag = tag.replace(/ /g, "")
+                tag = (tag=='★') ? 'favorite' : tag
             if( e.target.style.backgroundColor == "rgb(50, 50, 50)"){
                 e.target.style.backgroundColor = "rgb(90, 221, 255)"
                 e.target.style.color = "rgb(0, 0, 0)"
@@ -596,17 +506,6 @@ Vue.component('control-area', {
                     </div>
                 </div>
             </section>
-
-            <div :style="nodeNfoCSS">
-                <div>
-                    This computer is a bitcoin node; it's relayed
-                    {{mempool}} transaction<span v-if="mempool!=1">s</span>
-                    and connected to {{countPeers()}} peers:&nbsp;
-                </div>
-                <div :style="marqueeOuterCSS()">
-                    <span :style="marqueeInnerCSS()">{{displayPeers()}}</span>
-                </div>
-            </div>
 
         </section>
     </div>`
