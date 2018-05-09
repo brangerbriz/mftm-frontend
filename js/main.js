@@ -30,7 +30,7 @@ nsfwt.addEventListener('click',()=>{
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
 let blockchain, gui
-const ipaddr = '192.168.1.252:8989'//'10.1.10.41:8989'////'labs.brangerbriz.com:2222'
+const ipaddr = location.host
 const socket = io.connect(`https://${ipaddr}`)
 let w = innerWidth, h = innerHeight, f = 4 // frustum size
 
