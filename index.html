@@ -8,16 +8,25 @@
     </head>
     <body>
 
-        <div id="hiddenBtn"></div>
-        <div id="hiddenMenu">
-            <div id="buttons">
-                <span id="restart"> restart project </span>
-                <span id="nsfwToggle"> show nsfw </span>
-                <span id="testNewBlock">test new block</span>
-                <span id="close"> X </span>
+        <section id="about">
+            <div>
+                Messages from the Mines (MFTM) excavates and archives custom messages embedded in the Bitcoin blockchain. The distributed Bitcoin ledger contains hidden love messages, cryptic poems, ASCII art, signatures, eulogies and more. These messages are a creative misuse of the Bitcoin transaction protocol, a form of digital graffiti, unique—though overlooked—cultural artifacts forever embedded in one of the most contemporary digital technologies.
             </div>
-            <div id="consoleDump"></div>
-        </div>
+            <div>
+                MFTM was oriignally an <a href="https://brangerbriz.com/portfolio/messages-from-the-mines">interactive art installation</a> consisting ...life bitcoin node... this website archives the messages... explore it for media Archeology research... this is BETA... so lots of bugs... leave issues here or contact u<span></span>s@bra<span></span>ngerbr<span></span>iz.com.
+                <span id="sizeWarning"></span>
+            </div>
+            <div>
+                <img src="images/explain.png" alt="">
+            </div>
+            <div>
+                If you are over 18 years of age you can <span id="nsfwToggle">toggle off</span> the nsfw filter.
+            </div>
+            <div>
+                <div id="loading">...loading archive...</div>
+                <button id="enter">enter</button>
+            </div>
+        </section>
 
         <div id="gui">
             <nav-arrow :data-bc="blockchain" :data-cam="camera"
@@ -26,7 +35,7 @@
                         data-type="right" ref="rightArrow"></nav-arrow>
             <block-info :data-bc="blockchain" :data-cam="camera" ref="nfo"></block-info>
             <trans-msgs :data-bc="blockchain" ref="tx"></trans-msgs>
-            <control-area :data-bc="blockchain" ref="cntrl" data-id="hiddenMenu"></control-area>
+            <control-area :data-bc="blockchain" ref="cntrl" data-id="about"></control-area>
         </div>
 
         <script src="js/libs/socket.io.js"></script>
@@ -39,8 +48,6 @@
         <script src="js/vue-components/control-area.js"></script>
         <script src="js/Block.js"></script>
         <script src="js/Blockchain.js"></script>
-        <script src="js/auth.js"></script>
-        <script src="js/debug-menu.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>

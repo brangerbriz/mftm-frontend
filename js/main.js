@@ -1,4 +1,31 @@
 // _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/``````````\ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+// . . . . . . . . . . . . . . . . . . .    about  . . . . . . . . . . . . . . .
+// -------------------------------------\,,,,,,,,,,/----------------------------
+const nsfwt = document.querySelector('#nsfwToggle')
+
+if( innerHeight<767 || innerWidth<1700){
+    let warning = `(This page is best viewed at ~ 1700x767px,
+        your browser is currently ${innerWidth}x${innerHeight})`
+    document.querySelector('#sizeWarning').textContent = warning
+}
+
+document.querySelector('#enter').addEventListener('click',()=>{
+    document.querySelector('#about').style.display = 'none'
+})
+
+nsfwt.addEventListener('click',()=>{
+    if(nsfwt.textContent=="toggle off"){
+        nsfwt.textContent="toggle on"
+        console.log(nsfwt.textContent)
+        blockchain.sfwOnly = true
+    } else {
+        nsfwt.textContent="toggle off"
+        console.log(nsfwt.textContent)
+        blockchain.sfwOnly = false
+    }
+})
+
+// _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/``````````\ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 // . . . . . . . . . . . . . . . . . . .    setup  . . . . . . . . . . . . . . .
 // -------------------------------------\,,,,,,,,,,/----------------------------
 
@@ -84,8 +111,7 @@ socket.on('blockchain-data', function(data) {
 
     draw()
 
-    if( innerHeight<767 || innerWidth<1700){
-        alert(`Note: this page is best viewed at ~ 1700x767px,
-            your browser is currently ${innerWidth}x${innerHeight}`)
-    }
+    // show enter button
+    document.querySelector('#loading').style.display = "none"
+    document.querySelector('#enter').style.display = "block"
 })

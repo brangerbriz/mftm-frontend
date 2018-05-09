@@ -22,53 +22,43 @@ b { font-weight: bold; }
 
 a { color:#fff; text-decoration: none; }
 
-
-#hiddenBtn {
+#about {
     position: absolute;
-    top: 0px; right: 0px;
-    z-index: 99999999;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 1000;
+    padding-top:20px;
 }
 
-#hiddenMenu {
-    position: fixed;
-    top: 20px; right:20px;
-    z-index: 99999999;
-    width: 500px;
-    height: 500px;
+#about a { color:#88ffff; }
+
+#about > div {
+    margin:0 auto 20px auto;
+    max-width: 800px;
+}
+
+#about blockquote {
+    border-left: 6px solid #fff;
+    padding-left: 20px;
+}
+
+#nsfwToggle { color:#88ffff; cursor: pointer; }
+
+#enter {
     background: #000;
-    border: 1px solid #fff;
-    padding: 10px;
     display: none;
+    border:1px solid #fff;
+    padding: 6px 0px;
+    width: 150px; height:50px;
+    margin:0 auto;
+    text-align: center;
+    user-select:none;
+    cursor:pointer;
+    color:#fff;
 }
-    #buttons {
-        display: flex;
-        justify-content: space-around;
-        margin-bottom: 10px
-    }
-    #buttons > span {
-        border: 1px solid #fff;
-        padding: 3px 8px;
-        cursor: pointer;
-    }
-    #consoleDump {
-        border: 1px solid #fff;
-        padding: 5px;
-        height: 445px;
-    }
+#loading { text-align: center; }
 
-/* ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - */
-/*             FOR INSTALLATION VERSION ONLY           */
-/*             REMOVE FOR WEB VERSION                  */
-/* ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - ~ - */
-
-#gui:nth-child(4) section {
-    -moz-user-select: none; /* Firefox */
-    user-select: none;
-}
-body {
-    -moz-user-drag: none;
-    user-drag: none;
-}
+#about img { width:100%; }
