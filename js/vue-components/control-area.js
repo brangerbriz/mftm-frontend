@@ -250,8 +250,8 @@ Vue.component('control-area', {
             let tag = e.target.textContent
                 tag = tag.replace(/\n/g, "")
                 tag = tag.replace(/ /g, "")
-                tag = (tag=='☆') ? 'favorite' : tag
-                tag = (tag=='♡') ? 'bookmark' : tag
+                tag = (tag=='☆') ? 'bookmark' : tag
+                tag = (tag=='♡') ? 'favorite' : tag
             if( e.target.style.backgroundColor == "rgb(50, 50, 50)"){
                 e.target.style.backgroundColor = "rgb(90, 221, 255)"
                 e.target.style.color = "rgb(0, 0, 0)"
