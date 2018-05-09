@@ -72,7 +72,6 @@ Vue.component('block-info', {
             return `0 0 ${150*this.anim} 50`
         },
         getDate:function(time){
-            console.log(time)
             let date = new Date(time)
             let Y = date.getFullYear()
             let M = date.getMonth()+1
